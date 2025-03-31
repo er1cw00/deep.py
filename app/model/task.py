@@ -1,0 +1,87 @@
+
+
+from typing import Optional
+from pydantic import BaseModel
+
+class TaskType:
+    Unknown         = 0                 # 原TaskNone（避免与Python关键字None冲突）
+    Dummy           = 1                 # 原TaskDummy
+    FaceSwap        = 3                 # 原TaskFaceSwap
+    MinComfyTask    = 1000              # 范围标记保持原名
+    Upscale         = 1000              # 原TaskUpscale
+    Rmbg            = 1001              # 原TaskRMBG（RFC规范缩写通常全大写，这里按驼峰处理）
+    Anime           = 1002              # 原TaskAnime
+    LivePortrait    = 1003              # 原TaskLivePortrait
+    Txt2Img         = 1004              # 原TaskTxt2Img
+    FaceRestore     = 1005              # 原TaskFaceRestore
+    RedrawBg        = 1006              # 原TaskRedrawBG（BG按驼峰处理为Bg）
+    MaxComfyTask    = 1006              # 范围标记保持原名
+
+class TaskState:
+    Unknown     = 0              # 原TaskStateNone（避免与Python关键字None冲突）
+    InQueue     = 1              # 原TaskStateInQueue
+    InProgress  = 2              # 原TaskStateInProgress
+    Success     = 3              # 原TaskStateSuccess
+    Fail        = 4              # 原TaskStateFail
+    Cancel      = 5              # 原TaskStateCancel
+    Deleted     = 6              # 原TaskStateDeleted
+    ReplyFail   = 7              # 原TaskStateReplyFail
+
+class Priority:
+    Free = 0
+    Vip = 1
+    
+    
+class LivePortraitInfo(BaseModel):
+    type: str
+
+
+class UpscaleTaskInfo(BaseModel):
+    scale: int
+
+
+class LoRAInfo(BaseModel):
+    name: str
+    strength: float
+
+
+class Txt2ImgInfo(BaseModel):
+    width: int
+    height: int
+    checkpoint: Optional[str] = None
+    lora: Optional[LoRAInfo] = None
+    positive_prompt: str
+    negative_prompt: str
+    face_detailer: Optional[bool] = None
+
+
+class RedrawBGInfo(BaseModel):
+    checkpoint: Optional[str] = None
+    positive_prompt: str
+    negative_prompt: str
+    denoise: float
+
+
+class ObjectKeys(BaseModel):
+    source: Optional[str] = None
+    target: Optional[str] = None
+    output: Optional[str] = None
+
+
+class TaskInfo(BaseModel):
+    uid: str
+    task_id: str
+    task_type: int
+    task_state: int
+    priority: int
+    credit: int
+    start_time: int
+    update_time: int
+    video: bool
+    duration: Optional[int] = None
+    format: str
+    obj_keys: ObjectKeys
+    upscale: Optional[UpscaleTaskInfo] = None
+    live_portrait: Optional[LivePortraitInfo] = None
+    txt2img: Optional[Txt2ImgInfo] = None
+
