@@ -1,7 +1,9 @@
 
-
+import os
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, PrivateAttr
+from datetime import datetime
+from app.base.config import config
 
 class TaskType:
     Unknown         = 0                 # 原TaskNone（避免与Python关键字None冲突）
@@ -84,4 +86,10 @@ class TaskInfo(BaseModel):
     upscale: Optional[UpscaleTaskInfo] = None
     live_portrait: Optional[LivePortraitInfo] = None
     txt2img: Optional[Txt2ImgInfo] = None
-
+    _task_path: str = PrivateAttr(default=None)
+    
+    def get_task_path(self):
+        if self._task_path is None:
+            today = datetime.today().strftime("%Y%m%d")
+            self._task_path = os.path.join(config.get("task_path"), today, self.task_id)
+        return self._task_path

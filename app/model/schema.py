@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 from .task import TaskInfo
 
 class BaseResponse(BaseModel):
@@ -15,5 +16,11 @@ class VersionResponse(BaseResponse):
     branch: str
 
 class GetDeepTaskResponse(BaseResponse):
-    task: TaskInfo
+    task: Optional[TaskInfo] = None
     
+
+class UpdateDeepTaskRequest(BaseModel):
+    node: str
+    uid: str
+    task_id: str
+    task_state: int

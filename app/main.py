@@ -9,6 +9,8 @@ from app.base.logger import logger_init
 from app.base.config import config
 from app.service.schedule import lifespan
 from app.service.s3 import s3
+from app.service.task import ts
+from app.service.comfy import comfy
 from app.routes import routes_init
 
 
@@ -21,21 +23,12 @@ args = parser.parse_args()
 
 config.init(args.config)
 
-
-#comfy_root = config.get('deep.comfy_path')
-
-## init logger
+# 初始化日志
 logger_init()
 
-
-
-#print(f'Comfy root path: {comfy_root}')
-
-# init_comfy(comfy_root)
-
-
 s3.init()
-
+ts.init()
+comfy.init()
 
 # FastAPI 初始化
 app = FastAPI(lifespan=lifespan) 
