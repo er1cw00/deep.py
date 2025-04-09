@@ -12,7 +12,7 @@ from facefusion.facemask import FaceMasker, FaceMaskConfig
 
 from app.base.error import Error
 from app.base.logger import logger
-from .utils import get_providers_from_device
+from .utils import get_providers_from_device, get_video_writer
 
 class FaceSwapper:
     def __init__(self, swap_model, model_path, device):
@@ -94,7 +94,7 @@ class FaceSwapper:
         frame_interval = fps / target_fps  # 用于均匀采样
         frame_index = 0
         new_frame_id = 0  # 目标视频的帧编号
-        writer = self.get_video_writer(output_path, target_fps)
+        writer = get_video_writer(output_path, target_fps)
         
         while cap.isOpened():
             ret, target = cap.read()
@@ -103,32 +103,14 @@ class FaceSwapper:
             if new_frame_id * frame_interval <= frame_index:
                 crop_info =  self.yolo.detect(image=target, conf=self.face_detect_weight, order='left-right')
                 output = self.swap(source, source_face=face_list[0], target=target, crop_info=crop_info)
-                writer.append_data(output)
+                writer.append_data(output[..., ::-1])
                 new_frame_id += 1
 
             frame_index += 1
-            
         writer.close()
         cap.release()
         return output_path, Error.OK
         
-    def get_video_writer(self, outout_path, fps, quality):
-        video_format = 'mp4'     # default is mp4 format
-        codec = 'libx264'        # default is libx264 encoding
-        quality = quality        # video quality
-        pixelformat = 'yuv420p'  # video pixel format
-        image_mode = 'rbg'
-        macro_block_size = 2
-        ffmpeg_params = ['-crf', '20']
-        writer = imageio.get_writer(uri=outout_path,
-                            format=video_format,
-                            fps=fps, 
-                            codec=codec, 
-                            quality=quality, 
-                            ffmpeg_params=ffmpeg_params, 
-                            pixelformat=pixelformat, 
-                            macro_block_size=macro_block_size)
-        return writer
     
     def swap(self, source, source_face, target, crop_info):
         if len(crop_info) == 0:

@@ -1,6 +1,7 @@
 import os
-import random
 import sys
+import random
+import imageio
 from typing import Sequence, Mapping, Any, Union
 
 
@@ -63,7 +64,7 @@ def get_providers_from_device(device):
     providers = ['CPUExecutionProvider']
     if device == 'cuda':
         providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
-    elif device == 'coreml':
+    elif device == 'coreml' or device == 'mps':
         providers = ['CoreMLExecutionProvider', 'CPUExecutionProvider']
     elif device == 'rocm':
         providers = ['ROCMExecutionProvider', 'CPUExecutionProvider']
@@ -89,5 +90,21 @@ def add_comfy_path_to_sys_path(comfyui_path) -> None:
 
         print(f"'{comfyui_path}' added to sys.path")
 
+def get_video_writer(output_path, fps):
+    video_format = 'mp4'     # default is mp4 format
+    codec = 'libx264'        # default is libx264 encoding
+    #quality = quality        # video quality
+    pixelformat = 'yuv420p'  # video pixel format
+    image_mode = 'rbg'
+    macro_block_size = 2
+    ffmpeg_params = ['-crf', '18']
+    writer = imageio.get_writer(uri=output_path,
+                        format=video_format,
+                        fps=fps, 
+                        codec=codec, 
+                        ffmpeg_params=ffmpeg_params, 
+                        pixelformat=pixelformat, 
+                        macro_block_size=macro_block_size)
+    return writer
 
 

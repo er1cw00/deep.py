@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import importlib.util
 import torch
 from app.model.task import TaskState, TaskType 
@@ -7,13 +8,13 @@ from app.base.logger import logger
 from app.base.config import config
 from .utils import add_tbox_path_to_sys_path, add_comfy_path_to_sys_path
 
-
 class Comfy:
     def __init__(self):        
-        self.swapper = None
-        self.rmbg = None
-        self.liveportrait = None
-        self.restore = None  
+        self._swapper = None
+        self._rmbg = None
+        self._liveportrait = None
+        self._restore = None  
+        
         self.comfy_path = None
         self.tbox_path = None
         
@@ -50,27 +51,43 @@ class Comfy:
         
     def faceswap(self, task):
         from .faceswap import FaceSwapper
-        if self.swapper == None:
-            self.swapper = FaceSwapper('inswapper_128', self.model_path, self.device)
-        return self.swapper.process(task)
-
+        if self._swapper == None:
+            self._swapper = FaceSwapper('inswapper_128', self.model_path, self.device)
+        return self._swapper.process(task)
+    
     def liveportrait(self, task):
-        from .liveportrait import LivePortrait
-        if self.liveportrait == None:
-            lp_path = os.path.join(self.tbox_path, 'src/liveprotrait')
-            lp_model_path = os.path.join(self.model_path, "liveportrait")
-            self.liveportrait = LivePortrait(lp_model_path, self.device)
+        print(f'task =  {task.json()}')
         
+        from .liveportrait import LivePortrait
+        if self._liveportrait == None:
+            self._liveportrait = LivePortrait(self.model_path, self.device)
+        return self._liveportrait.process(task)
+    
     def rmbg(self, task):
         from .rmbg import RMBG
-        if self.rmbg == None:
-            model_path = os.path.join(self.model_path, "bria")
-            self.rmbg = RMBG(model_path, self.device)
-        
-    def run(self, task):
-        if task.task_type == TaskType.FaceSwap:
-            self.faceswap(task)
-            return 
+        if self._rmbg == None:
+            
+            self._rmbg = RMBG(self.model_path, self.device)
+        return self._rmbg.process(task)
+    
+    def restore(self, task):
+        from .facerestore import FaceRestore
+        if self._restore == None:
+            self._restore = FaceRestore(self.model_path, self.device)
+        return self._restore.process(task)
+    
 
 
 comfy = Comfy()
+
+
+# if __name__ == '__main__':
+#     config.init("../../deep.yaml")
+#     comfy.init()
+#     task = {
+#         'task_id': '0eeb9e938dbfaf1a5914ef5d6ef27496',
+#         'task_path': '/Users/wadahana/Desktop/test',
+#         'type': TaskType.LivePortrait,
+#         'state': TaskState.InProgress,        
+#     }
+    
