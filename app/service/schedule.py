@@ -18,31 +18,43 @@ class Scheduler:
         logger.info(f'scheduler init >> ')
     
     def dispatch_task(self, task):
+        output = ''
+        
         task.task_state == TaskState.InProgress
-        err = ts.prepare_files(task)
-        if err != Error.OK:
-            logger.error(f'dispatch_task >> prepare files for task({task.task_id}) fail, err: {err}')
-        if task.task_type == TaskType.FaceSwap:
-            output, result = comfy.faceswap(task)
-        
-        if result != Error.OK:
-            task.task_state = TaskState.Fail  
-        else:
-            task.task_state = TaskState.Success
+        try:
+            err = ts.prepare_files(task)
+            if err != Error.OK:
+                logger.error(f'dispatch_task >> prepare files for task({task.task_id}) fail, err: {err}')
+            else:
+                if task.task_type == TaskType.FaceSwap:
+                    output, err = comfy.faceswap(task)
+                elif task.task_type == TaskType.Rmbg:
+                    output, err = comfy.rmbg(task)
+                elif task.task_type == TaskType.FaceRestore:
+                    output, err = comfy.restore(task)
+                elif task.task_type == TaskType.LivePortrait:
+                    output, err = comfy.liveportrait(task)
+                    
+            if err == Error.OK:
+                task.task_state = TaskState.Success
+            else:
+                logger.error(f'dispatch_task >> task({task.task_id}) fail, err: {err}')
+                task.task_state = TaskState.Fail  
+        except Exception as e:
+            err = Error.Unknown
+            task.task_state = TaskState.Fail
+            logger.error(f'dispatch_task >> task({task.task_id}) exception: {e}')
+            traceback.print_exc()
             
+        logger.debug(f"dispatch_task >> update task: {task.task_id}, output: {output} err: {err}")
         ts.update_task(task, output)
-               
-        logger.debug(f"dispatch_task >> task: {task.task_id}, err: {err}")
         
-       # self.update_task(task)
-            
-    
-
        
     async def scheule_task(self):
         """异步后台任务：定期拉取数据"""
         logger.info('scheule_task >>>')
-        await asyncio.sleep(5)
+        interval = config.get('interval', 5)
+        await asyncio.sleep(interval)
         while True:
             logger.debug("scheule_task run....")
             try:

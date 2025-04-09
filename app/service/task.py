@@ -84,7 +84,6 @@ class TaskService:
         err = Error.OK
         if self.env == 'pro':
             count = config.get_proxy_count()
-                
         if count == 0:
             resp, err = self.do_update_task(req, proxy=None)
             if err != Error.OK:
@@ -98,7 +97,6 @@ class TaskService:
                 return Error.OK
             else: 
                 logger.warning(f"update_task >> update task({task.task_id}) fail, err: {err}")
-        
 
     def do_get_task(self, proxy=None):
         url = f'{self.api_base}/task'
