@@ -1,2 +1,4 @@
 ./prebuild.sh
-PYTHONPATH=. python app/main.py --config=./deep.yaml
+export PYTORCH_ENABLE_MPS_FALLBACK=1
+export PYTHONPATH=. 
+python app/main.py --config=./deep.yaml
