@@ -16,7 +16,7 @@ api_base: "http://localhost:9000/api/v1/conv"
 api_key: "ZDA3OTUzNDQ0MmE1Yjk0MzA0YzJmNDMxMGU3MDZkNWE="
 comfy_path: "/Users/wadahana/workspace/AI/sd/ComfyUI"
 task_path: "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task"
-
+interval: 25
 proxy:
-  - "http://127.0.0.1:8080"
+  - "http://127.0.0.1:7890"
   - "http://192.168.1.2:8082"
