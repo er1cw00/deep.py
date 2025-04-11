@@ -11,7 +11,7 @@ from app.base.error import Error
 from app.model.schema import GetDeepTaskResponse, UpdateDeepTaskRequest
 from app.model.task import TaskType, TaskState
 from app.service.task import ts
-from app.service.comfy import comfy
+from app.service.deep import deep
 
 class Scheduler:
     def __init__(self):
@@ -27,13 +27,15 @@ class Scheduler:
                 logger.error(f'dispatch_task >> prepare files for task({task.task_id}) fail, err: {err}')
             else:
                 if task.task_type == TaskType.FaceSwap:
-                    output, err = comfy.faceswap(task)
+                    output, err = deep.faceswap(task)
                 elif task.task_type == TaskType.Rmbg:
-                    output, err = comfy.rmbg(task)
+                    output, err = deep.rmbg(task)
                 elif task.task_type == TaskType.FaceRestore:
-                    output, err = comfy.restore(task)
+                    output, err = deep.restore(task)
                 elif task.task_type == TaskType.LivePortrait:
-                    output, err = comfy.liveportrait(task)
+                    output, err = deep.liveportrait(task)
+                elif task.task_type == TaskType.Anime:
+                    output, err = deep.anime(task)
                     
             if err == Error.OK:
                 task.task_state = TaskState.Success

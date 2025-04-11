@@ -1,14 +1,16 @@
 import os
 import sys
 import json
-import importlib.util
 import torch
+import subprocess
+import importlib.util
 from app.model.task import TaskState, TaskType 
 from app.base.logger import logger
 from app.base.config import config
+from app.base.error import Error
 from .utils import add_tbox_path_to_sys_path, add_comfy_path_to_sys_path
 
-class Comfy:
+class Deep:
     def __init__(self):        
         self._swapper = None
         self._rmbg = None
@@ -56,8 +58,6 @@ class Comfy:
         return self._swapper.process(task)
     
     def liveportrait(self, task):
-        print(f'task =  {task.json()}')
-        
         from .liveportrait import LivePortrait
         if self._liveportrait == None:
             self._liveportrait = LivePortrait(self.model_path, self.device)
@@ -76,9 +76,33 @@ class Comfy:
             self._restore = FaceRestore(self.model_path, self.device)
         return self._restore.process(task)
     
+    def anime(self, task):
+        print(f'task =  {task.json()}')
+        task_path = task.get_task_path()
+        target_path = os.path.join(task_path, 'target.jpg')
+        output_path = os.path.join(task_path, 'output.jpg')
+        anime_path = os.path.join(os.path.dirname(__file__), "comfy/anime.py")
 
-
-comfy = Comfy()
+        try:
+            result = subprocess.run([
+                'python', anime_path, 
+                '-c', self.comfy_path,
+                '-i', target_path,
+                '-o', output_path,
+                '-s', '1024',
+                '-d', 'CoreML'],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            logger.info(f"anime.py return: {result.returncode}, stderr: {result.stderr.strip()}")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"anime.py exception return: {e.returncode}, error: {e.stderr.strip()}")
+        if os.path.isfile(output_path) == True:
+            return output_path, Error.OK
+        return '',  Error.FileNotFound
+    
+deep = Deep()
 
 
 # if __name__ == '__main__':

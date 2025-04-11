@@ -10,7 +10,7 @@ from app.base.config import config
 from app.service.schedule import lifespan
 from app.service.s3 import s3
 from app.service.task import ts
-from app.service.comfy import comfy
+from app.service.deep import deep
 from app.routes import routes_init
 
 
@@ -28,7 +28,7 @@ logger_init()
 
 s3.init()
 ts.init()
-comfy.init()
+deep.init()
 
 # FastAPI 初始化
 app = FastAPI(lifespan=lifespan) 
