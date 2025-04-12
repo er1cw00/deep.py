@@ -5,6 +5,7 @@ import json
 import argparse
 import contextlib
 from typing import Sequence, Mapping, Any, Union
+from comfy.utils import set_progress_bar_enabled
 import torch
 
 
@@ -247,40 +248,46 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--input",
-    "-i",
-    default=None,
-    help="The location of the input image. should be a file path",
-)
-
-parser.add_argument(
     "--output",
     "-o",
     default=None,
     help="The location to save the output image. should be a file path",
 )
+parser.add_argument(
+    "--checkpoint",
+    "-m",
+    default=None,
+    help="The checkpoint model name",
+)
 
 parser.add_argument(
-    "--max-width",
+    "--width",
     "-W",
     type=int,
     default=1024,
-    help="Max width of output",
+    help="Max width of output resolution",
 )
 
 parser.add_argument(
-    "--max-height",
+    "--height",
     "-H",
     type=int,
-    default=1024,
-    help="Max height of output",
+    default=768,
+    help="Max height of output resolution",
 )
 
 parser.add_argument(
-    "--device",
-    "-d",
-    default='CPU',
-    help="Device, should be CUDA, CoreML, ROCM",
+    "--positive_prompt",
+    "-P",
+    default='beautiful scenery nature glass',
+    help="positive_prompt",
+)
+
+parser.add_argument(
+    "--negative_prompt",
+    "-N",
+    default='text, watermark, nsfw, nipples',
+    help="negative_prompt",
 )
 
 parser.add_argument(
@@ -289,6 +296,13 @@ parser.add_argument(
     help="Disables writing workflow metadata to the outputs",
 )
 
+parser.add_argument(
+    "--face-detailer",
+    "-F",
+    type=bool,
+    default=False,
+    help="positive_prompt",
+)
 
 comfy_args = [sys.argv[0]]
 if __name__ == "__main__" and "--" in sys.argv:
@@ -329,13 +343,13 @@ def import_custom_nodes() -> None:
     init_extra_nodes(init_custom_nodes=True)
 
 def check_resolution():
-    def check_size(max_size):
-        if max_size <= 512 :
-            max_size = 512
-        elif max_size >= 4096:
-            max_size = 4096
-        return max_size
-    return check_size(args.max_width), check_size(args.max_height)
+    def check_size(side):
+        if side <= 512 :
+            side = 512
+        elif side >= 4096:
+            side = 4096
+        return side
+    return check_size(args.width), check_size(args.height)
 
 _custom_nodes_imported = False
 _custom_path_added = False
@@ -359,23 +373,14 @@ def main(*func_args, **func_kwargs):
         all_args.update(func_kwargs)
 
         args = argparse.Namespace(**all_args)
-
-    if args.input is None or os.path.isfile(args.input) == False:
-        print(f'input file: {args.input} not exist')
-        sys.exit(1000) 
-        
+    
+    set_progress_bar_enabled(False)
+    
     if args.output is None or os.path.isdir(os.path.dirname(args.output)) == False:
         print(f'output dir: {args.output} not exist')
         sys.exit(1001) 
-    
-    max_width, max_height = check_resolution()
         
-    device = args.device
-    if device not in ["CUDA", "CoreML", "ROCM"]:
-        print(f'deivce ({device}) unsupport, fallback to CPU')
-        device = 'CPU'
-        
-        
+    width, height = check_resolution()
     with ctx:
         if not _custom_path_added:
             add_comfyui_directory_to_sys_path()
@@ -391,173 +396,119 @@ def main(*func_args, **func_kwargs):
         from nodes import NODE_CLASS_MAPPINGS
 
     with torch.inference_mode(), ctx:
-        imageloader = NODE_CLASS_MAPPINGS["ImageLoader"]()
-        imageloader_1 = imageloader.load_image(
-            path=args.input #"/Users/wadahana/Desktop/output2.jpg"
+        checkpointloadersimple = NODE_CLASS_MAPPINGS["CheckpointLoaderSimple"]()
+        checkpointloadersimple_4 = checkpointloadersimple.load_checkpoint(
+            ckpt_name=args.checkpoint
         )
 
-        checkpointloadersimple = NODE_CLASS_MAPPINGS["CheckpointLoaderSimple"]()
-        checkpointloadersimple_3 = checkpointloadersimple.load_checkpoint(
-            ckpt_name="MoyouV2.safetensors"
+        emptylatentimage = NODE_CLASS_MAPPINGS["EmptyLatentImage"]()
+        emptylatentimage_5 = emptylatentimage.generate(
+            width=width, height=height, batch_size=1
+        )
+
+        loraloader = NODE_CLASS_MAPPINGS["LoraLoader"]()
+        loraloader_10 = loraloader.load_lora(
+            lora_name='FilmVelvia3.safetensors',
+            strength_model=1,
+            strength_clip=1,
+            model=get_value_at_index(checkpointloadersimple_4, 0),
+            clip=get_value_at_index(checkpointloadersimple_4, 1),
+        )
+
+        clipsetlastlayer = NODE_CLASS_MAPPINGS["CLIPSetLastLayer"]()
+        clipsetlastlayer_45 = clipsetlastlayer.set_last_layer(
+            stop_at_clip_layer=-2, clip=get_value_at_index(loraloader_10, 1)
         )
 
         cliptextencode = NODE_CLASS_MAPPINGS["CLIPTextEncode"]()
-        cliptextencode_9 = cliptextencode.encode(
-            text="disproportional, Octane render, smudge, blurred, Low resolution, worst quality",
-            clip=get_value_at_index(checkpointloadersimple_3, 1),
+        cliptextencode_6 = cliptextencode.encode(
+            text=args.positive_prompt,
+            clip=get_value_at_index(clipsetlastlayer_45, 0),
         )
 
-        constrainimagenode = NODE_CLASS_MAPPINGS["ConstrainImageNode"]()
-        constrainimagenode_2 = constrainimagenode.constrain_image(
-            max_width=max_width,
-            max_height=max_height,
-            min_width=0,
-            min_height=0,
-            crop_if_required="no",
-            images=get_value_at_index(imageloader_1, 0),
-        )
-
-        wd14tagger = NODE_CLASS_MAPPINGS["WD14Tagger"]()
-        wd14tagger_63 = wd14tagger.process(
-            model="wd-v1-4-swinv2-tagger-v2",
-            device=device,
-            threshold=0.35,
-            character_threshold=0.85,
-            replace_underscore=False,
-            trailing_comma=False,
-            exclude_tags="",
-            images=get_value_at_index(constrainimagenode_2, 0),
-        )
-        text = get_value_at_index(wd14tagger_63, 0)
-        cliptextencode_10 = cliptextencode.encode(
-            text=get_value_at_index(wd14tagger_63, 0),
-            clip=get_value_at_index(checkpointloadersimple_3, 1),
-        )
-
-        ipadapterinsightfaceloader = NODE_CLASS_MAPPINGS["IPAdapterInsightFaceLoader"]()
-        ipadapterinsightfaceloader_17 = ipadapterinsightfaceloader.load_insightface(
-            provider=device
-        )
-
-        vaeencode = NODE_CLASS_MAPPINGS["VAEEncode"]()
-        vaeencode_30 = vaeencode.encode(
-            pixels=get_value_at_index(constrainimagenode_2, 0),
-            vae=get_value_at_index(checkpointloadersimple_3, 2),
+        cliptextencode_7 = cliptextencode.encode(
+            text=args.negative_prompt,
+            clip=get_value_at_index(clipsetlastlayer_45, 0),
         )
 
         ultralyticsdetectorprovider = NODE_CLASS_MAPPINGS[
             "UltralyticsDetectorProvider"
         ]()
-        ultralyticsdetectorprovider_45 = ultralyticsdetectorprovider.doit(
+        ultralyticsdetectorprovider_36 = ultralyticsdetectorprovider.doit(
             model_name="bbox/face_yolov8m.pt"
         )
 
-        ipadapterunifiedloader = NODE_CLASS_MAPPINGS["IPAdapterUnifiedLoader"]()
-        ipadapter = NODE_CLASS_MAPPINGS["IPAdapter"]()
-        ipadapterunifiedloaderfaceid = NODE_CLASS_MAPPINGS[
-            "IPAdapterUnifiedLoaderFaceID"
-        ]()
-        ipadapterfaceid = NODE_CLASS_MAPPINGS["IPAdapterFaceID"]()
         ksampler = NODE_CLASS_MAPPINGS["KSampler"]()
         vaedecode = NODE_CLASS_MAPPINGS["VAEDecode"]()
         facedetailer = NODE_CLASS_MAPPINGS["FaceDetailer"]()
         imagesaver = NODE_CLASS_MAPPINGS["ImageSaver"]()
         for q in range(args.queue_size):
-            ipadapterunifiedloader_13 = ipadapterunifiedloader.load_models(
-                preset="PLUS (high strength)",
-                model=get_value_at_index(checkpointloadersimple_3, 0),
-            )
-
-            ipadapter_14 = ipadapter.apply_ipadapter(
-                weight=1,
-                start_at=0,
-                end_at=1,
-                weight_type="style transfer",
-                model=get_value_at_index(ipadapterunifiedloader_13, 0),
-                ipadapter=get_value_at_index(ipadapterunifiedloader_13, 1),
-                image=get_value_at_index(constrainimagenode_2, 0),
-            )
-
-            ipadapterunifiedloaderfaceid_16 = ipadapterunifiedloaderfaceid.load_models(
-                preset="FACEID PLUS - SD1.5 only",
-                lora_strength=0.6,
-                provider=device,
-                model=get_value_at_index(ipadapter_14, 0),
-            )
-
-            ipadapterfaceid_18 = ipadapterfaceid.apply_ipadapter(
-                weight=1,
-                weight_faceidv2=1,
-                weight_type="linear",
-                combine_embeds="concat",
-                start_at=0,
-                end_at=1,
-                embeds_scaling="V only",
-                model=get_value_at_index(ipadapterunifiedloaderfaceid_16, 0),
-                ipadapter=get_value_at_index(ipadapterunifiedloaderfaceid_16, 1),
-                image=get_value_at_index(constrainimagenode_2, 0),
-                insightface=get_value_at_index(ipadapterinsightfaceloader_17, 0),
-            )
-
-            ksampler_31 = ksampler.sample(
+            ksampler_3 = ksampler.sample(
                 seed=random.randint(1, 2**64),
                 steps=20,
                 cfg=8,
                 sampler_name="euler",
                 scheduler="normal",
-                denoise=0.4,
-                model=get_value_at_index(ipadapter_14, 0),
-                positive=get_value_at_index(cliptextencode_10, 0),
-                negative=get_value_at_index(cliptextencode_9, 0),
-                latent_image=get_value_at_index(vaeencode_30, 0),
+                denoise=1,
+                model=get_value_at_index(loraloader_10, 0),
+                positive=get_value_at_index(cliptextencode_6, 0),
+                negative=get_value_at_index(cliptextencode_7, 0),
+                latent_image=get_value_at_index(emptylatentimage_5, 0),
             )
 
-            vaedecode_29 = vaedecode.decode(
-                samples=get_value_at_index(ksampler_31, 0),
-                vae=get_value_at_index(checkpointloadersimple_3, 2),
+            vaedecode_8 = vaedecode.decode(
+                samples=get_value_at_index(ksampler_3, 0),
+                vae=get_value_at_index(checkpointloadersimple_4, 2),
             )
 
-            facedetailer_46 = facedetailer.doit(
-                guide_size=512,
-                guide_size_for=True,
-                max_size=1024,
-                seed=random.randint(1, 2**64),
-                steps=16,
-                cfg=8,
-                sampler_name="euler",
-                scheduler="normal",
-                denoise=0.5,
-                feather=8,
-                noise_mask=True,
-                force_inpaint=True,
-                bbox_threshold=0.5,
-                bbox_dilation=10,
-                bbox_crop_factor=3,
-                sam_detection_hint="center-1",
-                sam_dilation=0,
-                sam_threshold=0.93,
-                sam_bbox_expansion=0,
-                sam_mask_hint_threshold=0.7,
-                sam_mask_hint_use_negative="False",
-                drop_size=10,
-                wildcard="detail face, beautiful face, eyes, ",
-                cycle=1,
-                inpaint_model=True,
-                noise_mask_feather=20,
-                image=get_value_at_index(vaedecode_29, 0),
-                model=get_value_at_index(ipadapterfaceid_18, 0),
-                clip=get_value_at_index(checkpointloadersimple_3, 1),
-                vae=get_value_at_index(checkpointloadersimple_3, 2),
-                positive=get_value_at_index(cliptextencode_10, 0),
-                negative=get_value_at_index(cliptextencode_9, 0),
-                bbox_detector=get_value_at_index(ultralyticsdetectorprovider_45, 0),
-            )
+            if args.face_detailer == True:
+                facedetailer_27 = facedetailer.doit(
+                    guide_size=512,
+                    guide_size_for=True,
+                    max_size=1024,
+                    seed=random.randint(1, 2**64),
+                    steps=20,
+                    cfg=8,
+                    sampler_name="euler",
+                    scheduler="normal",
+                    denoise=0.5,
+                    feather=5,
+                    noise_mask=True,
+                    force_inpaint=True,
+                    bbox_threshold=0.5,
+                    bbox_dilation=10,
+                    bbox_crop_factor=3,
+                    sam_detection_hint="center-1",
+                    sam_dilation=0,
+                    sam_threshold=0.93,
+                    sam_bbox_expansion=0,
+                    sam_mask_hint_threshold=0.7,
+                    sam_mask_hint_use_negative="False",
+                    drop_size=10,
+                    wildcard="nose, hair, eyes, detailed_face, beautiful_face",
+                    cycle=1,
+                    inpaint_model=False,
+                    noise_mask_feather=20,
+                    image=get_value_at_index(vaedecode_8, 0),
+                    model=get_value_at_index(loraloader_10, 0),
+                    clip=get_value_at_index(clipsetlastlayer_45, 0),
+                    vae=get_value_at_index(checkpointloadersimple_4, 2),
+                    positive=get_value_at_index(cliptextencode_6, 0),
+                    negative=get_value_at_index(cliptextencode_7, 0),
+                    bbox_detector=get_value_at_index(ultralyticsdetectorprovider_36, 0),
+                )
 
-            imagesaver_64 = imagesaver.save_image(
-                path=args.output, #"/Users/wadahana/Desktop/output.jpg",
-                quality=85,
-                images=get_value_at_index(facedetailer_46, 0),
-            )
+                imagesaver_53 = imagesaver.save_image(
+                    path=args.output,
+                    quality=85,
+                    images=get_value_at_index(facedetailer_27, 0),
+                )
+            else:
+                imagesaver_53 = imagesaver.save_image(
+                    path=args.output,
+                    quality=85,
+                    images=get_value_at_index(vaedecode_8, 0),
+                )
 
 
 if __name__ == "__main__":
