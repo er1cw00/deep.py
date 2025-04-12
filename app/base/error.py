@@ -13,3 +13,4 @@ class Error(Enum):
     FileSizeExceeded = 'file size exceeded'
     NoFaceDetected = 'no face detected'
     UnknownResponse = 'unknown response'
+    SubprocessFail = 'subprocess fail'
