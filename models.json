@@ -1,0 +1,13 @@
+{
+    "checkpoint":[
+        {"name": "default", "model": "v1-5-pruned-emaonly.safetensors"},
+        {"name": "majicmixRealistic_v6", "model": "majicmixRealistic_v6.safetensors"},
+        {"name": "MoyouV2", "model": "MoyouV2.safetensors"},
+        {"name": "realisticVision", "model": "realisticVisionV60B1_v51HyperVAE.safetensors"}
+    ],
+    "lora": [
+        {"name": "FilmVelvia3", "model": "FilmVelvia3.safetensors", "clip_skip": -2},
+        {"name": "GenshinFull", "model": "GenshinFull.safetensors", "clip_skip": -2},
+        {"name": "Ganyu", "model": "Ganyu.safetensors", "clip_skip": -2}
+    ]
+}

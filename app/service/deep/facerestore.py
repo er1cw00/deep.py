@@ -51,7 +51,6 @@ class FaceRestore:
         output_path = os.path.join(task_path, 'output.jpg')
 
         target = cv2.imread(target_path)
-        #target = cv2.cvtColor(target, cv2.COLOR_RGB2BGR)
         
         face_list = self.yolo.detect(image=target, conf=self.face_detect_weight)
         if len(face_list) <= 0:

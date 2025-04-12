@@ -36,7 +36,9 @@ class Scheduler:
                     output, err = deep.liveportrait(task)
                 elif task.task_type == TaskType.Anime:
                     output, err = deep.anime(task)
-                    
+                elif task.task_type == TaskType.Txt2Img:
+                    output, err = deep.txt2img(task)
+
             if err == Error.OK:
                 task.task_state = TaskState.Success
             else:
