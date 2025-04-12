@@ -5,7 +5,6 @@ import json
 import argparse
 import contextlib
 from typing import Sequence, Mapping, Any, Union
-from comfy.utils import set_progress_bar_enabled
 import torch
 
 
@@ -342,6 +341,10 @@ def import_custom_nodes() -> None:
     # Initializing custom nodes
     init_extra_nodes(init_custom_nodes=True)
 
+def disable_show_progress_bar():
+    from comfy.utils import set_progress_bar_enabled
+    set_progress_bar_enabled(False)
+    
 def check_resolution():
     def check_size(side):
         if side <= 512 :
@@ -374,7 +377,7 @@ def main(*func_args, **func_kwargs):
 
         args = argparse.Namespace(**all_args)
     
-    set_progress_bar_enabled(False)
+
     
     if args.output is None or os.path.isdir(os.path.dirname(args.output)) == False:
         print(f'output dir: {args.output} not exist')
@@ -385,7 +388,8 @@ def main(*func_args, **func_kwargs):
         if not _custom_path_added:
             add_comfyui_directory_to_sys_path()
             add_extra_model_paths()
-
+            disable_show_progress_bar()
+            
             _custom_path_added = True
 
         if not _custom_nodes_imported:
