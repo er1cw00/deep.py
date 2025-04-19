@@ -63,6 +63,7 @@ class Scheduler:
             logger.debug("scheule_task run....")
             try:
                 task = ts.get_task()
+                print(f"task: {task}")
                 if task != None:
                     self.dispatch_task(task)
             except Exception as e:
