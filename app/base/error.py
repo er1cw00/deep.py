@@ -14,3 +14,4 @@ class Error(Enum):
     NoFaceDetected = 'no face detected'
     UnknownResponse = 'unknown response'
     SubprocessFail = 'subprocess fail'
+    Unauthorized = 'unauthorized'
