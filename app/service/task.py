@@ -1,8 +1,12 @@
 import os
 import requests
+import ffmpeg
+import traceback
+from PIL import Image
 from pydantic import ValidationError
 from app.model.task import TaskInfo, TaskType, TaskState
 from app.model.schema import BaseResponse, GetDeepTaskResponse, UpdateDeepTaskRequest
+from app.base.media import get_mime_type_from_filepath, get_postfix_from_mime_type
 from app.base.config import config
 from app.base.error import Error
 from app.base.logger import logger
@@ -137,7 +141,7 @@ class TaskService:
     def do_fetch_file(self, url, name, task_path) -> tuple[str, Error]:
         logger.debug(f"do_fetch_file >> url: {url}, name: {name}, task_path: {task_path}")
         if url.startswith("http://") or url.startswith("https://"):
-            return '', Error.FileNotFound
+            return self.download_file(url, task_path, name)
         elif url.startswith("r2://") or url.startswith("s3://"):
             return s3.get_object(url[5:], task_path, name)
         elif url.startswith("file://"):
@@ -179,5 +183,85 @@ class TaskService:
             logger.error(f"unknown exception >> {e}")
             err = Error.Unknown
         return None, err
+
+
+    def download_file(self, url, task_path, name):
+        tmp_file, content_type, err = self.do_download_file(url, task_path, name)
+        if err == Error.NetworkError:
+            logger.error(f'download ({url}) network error')
+            return '', err
+        
+        format, video, err = get_postfix_from_mime_type(content_type)
+        if err != Error.OK:
+            logger.error(f'download ({url}) unsupport file type({content_type})')
+            return '', err
+        
+        if video == False:
+            dst_file = os.path.join(task_path, f'{name}.jpg')
+            if format == 'jpg':
+                os.rename(tmp_file, dst_file)
+            elif format == 'png':
+                with Image.open(tmp_file) as img:
+                    img = img.convert("RGB")
+                    img.save(dst_file, "JPEG")
+                os.remove(tmp_file)
+            else:
+                print(f'download ({url}) unknown file type({content_type})')
+                return '', Error.UnsupportFile
+        else:
+            dst_file = os.path.join(task_path, f'{name}.mp4')
+            if format == 'mp4':
+                os.rename(tmp_file, dst_file)
+            elif format == 'mov':
+                ffmpeg.input(tmp_file).output(dst_file, vcodec="copy", acodec="copy").run(quiet=True, overwrite_output=True)
+                os.remove(tmp_file)
+            else:
+                print(f'download ({url}) unknown file type({content_type})')
+                return '', Error.UnsupportFile                    
+            
+        if os.path.isfile(dst_file): 
+            return dst_file, Error.OK
+            
+        return '', Error.FileNotFound
     
+    def do_download_file(self, url, task_path, name, proxies=None ):
+        try:
+            headers = {'Authorization': f'Basic api-{self.api_key}'}
+            response = requests.get(url, headers=headers, stream=True, timeout=15, proxies=proxies)
+            
+            status = response.status_code
+            if status == 404:
+                return '', '', Error.FileNotFound
+            elif status == 401:
+                return '', '', Error.Unauthorized
+            elif 500 <= status < 600:
+                return '', '', Error.ServerError
+            
+            # 获取 Content-Type 并映射到扩展名
+            content_type = response.headers.get("Content-Type", "").lower()
+            content_length = response.headers.get("Content-Length")
+            content_length = int(content_length) if content_length is not None else 0
+            if content_length == 0:
+                return '', '', Error.UnsupportFile
+            
+            temp_file = os.path.join(task_path, f'{name}.tmp')
+            with open(temp_file, "wb") as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+            return temp_file, content_type, Error.OK 
+        
+        except requests.exceptions.RequestException as e:
+            logger.error(f"request exception >> {e}")
+            err = Error.NetworkError
+        except requests.exceptions.ConnectionError:
+            logger.error(f"connect exception >> {e}")
+            err = Error.NetworkError
+        except Exception as e:
+            logger.error(f"exception >> {e}")
+            err = Error.Unknown
+            
+        return '', '', err     
+        
+        
 ts = TaskService()

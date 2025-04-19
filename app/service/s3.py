@@ -57,6 +57,7 @@ class S3:
                 return result
         return result
     
+    
     def get_object(self, obj_key, task_path, name):
         for client in self.clients:
             tmp_file, content_type, err = self.do_get_object(client, obj_key, task_path, name)
@@ -135,18 +136,6 @@ class S3:
             traceback.print_exc()
         return Error.Unknown
     
-    # def do_get_object(self, client, obj_key, task_path, name):
-    #     try:
-    #         metadata = client.head_object(Bucket=self.bucket_name, Key=obj_key)
-    #         content_type = metadata.get("ContentType", "").split(";")[0].strip().lower()
-    #         content_length = metadata.get("ContentLength", 0)
-    #         if content_length == 0:
-    #             return '', '', Error.UnsupportFile
-    #         temp_file = os.path.join(task_path, f'{name}.tmp')
-            
-    #         x = client.download_file(self.bucket_name, obj_key, temp_file)
-    #         print(f'x: {x}, isfile: {os.path.isfile(temp_file)}')
-    #         return temp_file, content_type, Error.OK
     def do_get_object(self, client, obj_key, task_path, name):
         try:
             response = client.get_object(Bucket=self.bucket_name, Key=obj_key)
@@ -192,8 +181,6 @@ class S3:
         return '', '', err
     
 
-        
-    
  
     def do_del_object(self, client, obj_key):
         pass

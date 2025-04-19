@@ -61,11 +61,11 @@ class Deep:
         self.ckpt_map = {item['name']: item for item in data.get('checkpoint', [])}
         self.lora_map = {item['name']: item for item in data.get('lora', [])}
         
-        print("Checkpoint 字典:")
-        print(json.dumps(self.ckpt_map, indent=2, ensure_ascii=False))
+        # print("Checkpoint 字典:")
+        # print(json.dumps(self.ckpt_map, indent=2, ensure_ascii=False))
 
-        print("\nLoRA 字典:")
-        print(json.dumps(self.lora_map, indent=2, ensure_ascii=False))
+        # print("\nLoRA 字典:")
+        # print(json.dumps(self.lora_map, indent=2, ensure_ascii=False))
 
     def check_ckpt(self, name):
         default = self.ckpt_map.get('default')
