@@ -8,7 +8,7 @@ from app.base.config import config
 class TaskType:
     Unknown         = 0                 # 原TaskNone（避免与Python关键字None冲突）
     Dummy           = 1                 # 原TaskDummy
-    FaceSwap        = 3                 # 原TaskFaceSwap
+    #FaceSwap        = 3                 # 原TaskFaceSwap
     MinComfyTask    = 1000              # 范围标记保持原名
     Upscale         = 1000              # 原TaskUpscale
     Rmbg            = 1001              # 原TaskRMBG（RFC规范缩写通常全大写，这里按驼峰处理）
@@ -17,7 +17,8 @@ class TaskType:
     Txt2Img         = 1004              # 原TaskTxt2Img
     FaceRestore     = 1005              # 原TaskFaceRestore
     RedrawBg        = 1006              # 原TaskRedrawBG（BG按驼峰处理为Bg）
-    MaxComfyTask    = 1006              # 范围标记保持原名
+    FaceSwap        = 1007              # 原TaskFaceSwap
+    MaxComfyTask    = 1007              # 范围标记保持原名
 
 class TaskState:
     Unknown     = 0              # 原TaskStateNone（避免与Python关键字None冲突）
