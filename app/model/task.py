@@ -82,6 +82,7 @@ class TaskInfo(BaseModel):
     update_time: int
     video: bool
     duration: Optional[int] = None
+    trim_duration: Optional[int] = None
     format: str
     obj_keys: ObjectKeys
     upscale: Optional[UpscaleTaskInfo] = None

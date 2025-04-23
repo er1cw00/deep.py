@@ -171,15 +171,6 @@ class Deep:
 deep = Deep()
 
 
-# if __name__ == '__main__':
-#     config.init("../../deep.yaml")
-#     comfy.init()
-#     task = {
-#         'task_id': '0eeb9e938dbfaf1a5914ef5d6ef27496',
-#         'task_path': '/Users/wadahana/Desktop/test',
-#         'type': TaskType.LivePortrait,
-#         'state': TaskState.InProgress,        
-#     }
     
+# export PYTHONPATH=$PWD python -m app.service.deep.faceswap   
 #  anime  task =  {"uid":"0e4aa699aeabf6b599b3eab95c8c32fd","task_id":"b272db2e63c66b816ed033b0f7af599f","task_type":1002,"task_state":1,"priority":1,"credit":1,"start_time":1744399660,"update_time":28800,"video":false,"duration":null,"format":"jpg","obj_keys":{"source":null,"target":"r2://website/dev/task/b272db2e63c66b816ed033b0f7af599f/target","output":"r2://website/dev/task/b272db2e63c66b816ed033b0f7af599f/output.jpg"},"upscale":null,"live_portrait":null,"txt2img":null}
-#  

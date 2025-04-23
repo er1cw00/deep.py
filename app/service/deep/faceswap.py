@@ -12,14 +12,14 @@ from facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landm
 from facefusion.facemask import FaceMasker, FaceMaskConfig
 
 from app.base.error import Error
-from .utils import get_providers_from_device, get_video_writer
+from .utils import get_providers_from_device, get_video_writer, restore_audio
 
 class FaceSwapper:
     def __init__(self, swap_model, model_path, device):
         self.max_fps = 25
         self.dsize = (256,256)
         self.face_detect_weight = 0.6
-        self.face_restore_blend = 0.75
+        self.face_restore_blend = 0.70
         self.device = device
         self.model_path  = os.path.join(model_path, "facefusion")
         self.swap_model = swap_model
@@ -90,13 +90,21 @@ class FaceSwapper:
         if len(face_list) <= 0:
             return "", Error.NoFaceDetected
         
+        max_frame_count = total 
+        trim_duration = None
+        if task.trim_duration != None and task.trim_duration * fps < max_frame_count:
+            max_frame_count = int(task.trim_duration * fps)
+            trim_duration = task.trim_duration
+            
+        logger.info(f"task: {task.task_id}, total: {total}, fps: {fps}, max_frame_count: {max_frame_count}")
+        
         target_fps = min(self.max_fps, fps)
         frame_interval = fps / target_fps  # 用于均匀采样
         frame_index = 0
         new_frame_id = 0  # 目标视频的帧编号
         writer = get_video_writer(output_path, target_fps)
         
-        while cap.isOpened():
+        while cap.isOpened() and frame_index < max_frame_count:
             ret, target = cap.read()
             if not ret:
                 break
@@ -109,7 +117,9 @@ class FaceSwapper:
             frame_index += 1
         writer.close()
         cap.release()
-        return output_path, Error.OK
+       
+        err = restore_audio(target_path, output_path, trim_duration)
+        return output_path, err 
         
     
     def swap(self, source, source_face, target, crop_info):
@@ -143,15 +153,24 @@ class FaceSwapper:
         target_face, affine = warp_face_by_landmark(target, target_crop_info[1], arcface_128_v2, self.dsize)
         
         crop_mask = self.masker.create_mask(target_face)
-        output = self.inswapper.swap(embedding[0], target_face)
+        swapped = self.inswapper.swap(embedding[0], target_face)
+        swapped = paste_back(target, swapped, crop_mask, affine)
         
         if self.face_restore_blend >= 0.01:
-            output = self.gfpgan.run(output)
+            target_face, affine = warp_face_by_landmark(image=swapped, face_landmark_5=target_crop_info[1], warp_template=ffhq_512, crop_size=self.gfpgan.input_size)
+            crop_mask = self.masker.create_mask(target_face)
+            output = self.gfpgan.run(target_face)
+            output = paste_back(swapped, output, crop_mask, affine)
+            output = blend_frame(swapped, output, self.face_restore_blend)
+        else:
+            output = swapped
+        # if self.face_restore_blend >= 0.01:
+        #     output = self.gfpgan.run(output)
         
-        output = paste_back(target, output, crop_mask, affine)
         
-        if self.face_restore_blend >= 0.01:
-            output = blend_frame(target, output, self.face_restore_blend)
+        
+        # if self.face_restore_blend >= 0.01:
+        #     output = blend_frame(target, output, self.face_restore_blend)
             
         return output
              
