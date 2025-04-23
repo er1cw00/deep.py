@@ -96,7 +96,7 @@ class FaceSwapper:
             max_frame_count = int(task.trim_duration * fps)
             trim_duration = task.trim_duration
             
-        logger.info(f"task: {task.task_id}, total: {total}, fps: {fps}, max_frame_count: {max_frame_count}")
+        logger.info(f"task: {task.task_id}, total: {total}, fps: {fps}, max_frame_count: {max_frame_count}, trim_duration: {trim_duration}")
         
         target_fps = min(self.max_fps, fps)
         frame_interval = fps / target_fps  # 用于均匀采样
@@ -164,13 +164,6 @@ class FaceSwapper:
             output = blend_frame(swapped, output, self.face_restore_blend)
         else:
             output = swapped
-        # if self.face_restore_blend >= 0.01:
-        #     output = self.gfpgan.run(output)
-        
-        
-        
-        # if self.face_restore_blend >= 0.01:
-        #     output = blend_frame(target, output, self.face_restore_blend)
             
         return output
              

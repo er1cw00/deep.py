@@ -98,17 +98,18 @@ def restore_audio(target_path, output_path, duration):
     os.rename(output_path, temp_path)
 
     try:
-        input_video = ffmpeg.input(temp_path)
-        input_audio = ffmpeg.input(target_path)
-
         kwargs = {
-            'map': ['0:v:0', '1:a:0?'],
+            'map': ['0:v:0', '1:a:0'],
             'c': 'copy',
             'shortest': None
         }
+        print(f'duration: {duration}')
         if duration is not None:
             input_video = ffmpeg.input(temp_path, ss=0, to=duration)
             input_audio = ffmpeg.input(target_path, ss=0, to=duration)
+        else:
+            input_video = ffmpeg.input(temp_path)
+            input_audio = ffmpeg.input(target_path)
             
         ffmpeg.output(input_video, input_audio, output_path, **kwargs).run(overwrite_output=True)
     except ffmpeg.Error as e:
@@ -143,7 +144,8 @@ def get_video_writer(output_path, fps):
                         codec=codec, 
                         ffmpeg_params=ffmpeg_params, 
                         pixelformat=pixelformat, 
-                        macro_block_size=macro_block_size)
+                        macro_block_size=macro_block_size,
+                        ffmpeg_log_level='quiet')
     return writer
 
 
