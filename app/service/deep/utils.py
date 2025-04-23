@@ -153,15 +153,14 @@ def get_video_writer(output_path, fps):
     pixelformat = 'yuv420p'  # video pixel format
     image_mode = 'rbg'
     macro_block_size = 2
-    ffmpeg_params = ['-crf', '22', '-preset', 'medium', '-tag:v', 'hvc1']
+    ffmpeg_params = ['-crf', '22', '-preset', 'medium', '-tag:v', 'hvc1', '-ffmpeg_log_level', 'quiet']
     writer = imageio.get_writer(uri=output_path,
                         format=video_format,
                         fps=fps, 
                         codec=codec, 
                         ffmpeg_params=ffmpeg_params, 
                         pixelformat=pixelformat, 
-                        macro_block_size=macro_block_size,
-                        ffmpeg_log_level='quiet')
+                        macro_block_size=macro_block_size)
     return writer
 
 
