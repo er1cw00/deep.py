@@ -93,14 +93,28 @@ def add_comfy_path_to_sys_path(comfyui_path) -> None:
 
         print(f"'{comfyui_path}' added to sys.path")
 
+def has_audio(input_path):
+    try:
+        probe = ffmpeg.probe(input_path)
+        has_audio = any(stream['codec_type'] == 'audio' for stream in probe['streams'])
+        return has_audio
+    except ffmpeg.Error as e:
+        logger.error('ffmpeg error:', e.stderr.decode() if e.stderr else str(e))
+    except Exception as e:
+        logger.error('ffmpeg unknown error:', str(e))
+    return False
+
 def restore_audio(target_path, output_path, duration):
+    if has_audio(target_path) == False:
+        logger.warning(f"target video {target_path} has no audio")
+        return Error.NoAudio
     temp_path = output_path.replace('.mp4', '_noaudio.mp4')
     os.rename(output_path, temp_path)
 
     try:
         kwargs = {
-            'map': ['0:v:0', '1:a:0'],
             'c': 'copy',
+            'loglevel': 'quiet',
             'shortest': None
         }
         print(f'duration: {duration}')
@@ -111,12 +125,14 @@ def restore_audio(target_path, output_path, duration):
             input_video = ffmpeg.input(temp_path)
             input_audio = ffmpeg.input(target_path)
             
-        ffmpeg.output(input_video, input_audio, output_path, **kwargs).run(overwrite_output=True)
+        o = ffmpeg.output(input_video['v:0'], input_audio['a:0?'], output_path, **kwargs).global_args('-hide_banner') 
+        print(f"ffmpeg output: {o.compile()}")
+        o.run(overwrite_output=True)
     except ffmpeg.Error as e:
         logger.error('ffmpeg error:', e.stderr.decode() if e.stderr else str(e))
         return Error.FFmpegError
     except Exception as e:
-        logger.error('ffmpeg error:', e.stderr.decode() if e.stderr else str(e))
+        logger.error('ffmpeg unknown error:', str(e))
         return Error.Unknown
     
     return Error.OK
@@ -149,3 +165,7 @@ def get_video_writer(output_path, fps):
     return writer
 
 
+if __name__ == "__main__":
+    output = "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task/20250423/c666a8e4bfd36a0179924e71f85dca20/output.mp4"
+    target = "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task/20250423/c666a8e4bfd36a0179924e71f85dca20/target.mp4"
+    restore_audio( target, output, None)
