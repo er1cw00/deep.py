@@ -58,7 +58,7 @@ class LivePortrait:
         
         source_crop_info = self.cropper.crop_source([source])
         if source_crop_info['frame_crop_lst'] == None or len(source_crop_info['frame_crop_lst']) == 0 :
-            return "", Error.NoFaceDetected
+            return "", Error.NoFace
         
         frames = []
         for i in range(total):

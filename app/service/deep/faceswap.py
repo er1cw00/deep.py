@@ -66,7 +66,7 @@ class FaceSwapper:
         
         face_list = self.yolo.detect(image=source, conf=self.face_detect_weight, order='large-small')
         if len(face_list) <= 0:
-            return "", Error.NoFaceDetected
+            return "", Error.NoFace
         
         crop_info =  self.yolo.detect(image=target, conf=self.face_detect_weight, order='left-right')
         output = self.swap(source, face_list[0], target=target, crop_info=crop_info)
@@ -88,7 +88,7 @@ class FaceSwapper:
         
         face_list = self.yolo.detect(image=source, conf=self.face_detect_weight, order='large-small')
         if len(face_list) <= 0:
-            return "", Error.NoFaceDetected
+            return "", Error.NoFace
         
         max_frame_count = total 
         trim_duration = None

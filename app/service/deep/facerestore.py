@@ -54,7 +54,7 @@ class FaceRestore:
         
         face_list = self.yolo.detect(image=target, conf=self.face_detect_weight)
         if len(face_list) <= 0:
-            return "", Error.NoFaceDetected
+            return "", Error.NoFace
         
         output = self.restore_face(target, face_list)
         cv2.imwrite(output_path, output)
