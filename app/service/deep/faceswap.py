@@ -114,12 +114,14 @@ class FaceSwapper:
             if not ret:
                 break
             if new_frame_id * frame_interval <= frame_index:
-                crop_info =  self.yolo.detect(image=target, conf=self.face_detect_weight, order='large-small')
+                crop_info = self.yolo.detect(image=target, conf=self.face_detect_weight, order='large-small')
                 output = self.swap(source, source_face=face_list[0], target=target, crop_info=crop_info)
                 writer.append_data(output[..., ::-1])
+                print(f'write frame_index: {frame_index}, new_frame_id: {new_frame_id}')
                 new_frame_id += 1
+                
             else:
-                print(f'skip frame_index: {frame_index}')
+                print(f'skip >>>>>> frame_index: {frame_index}')
             frame_index += 1
         writer.close()
         cap.release()
