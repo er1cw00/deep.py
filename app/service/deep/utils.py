@@ -114,8 +114,7 @@ def restore_audio(target_path, output_path, duration):
     try:
         kwargs = {
             'c': 'copy',
-            'loglevel': 'quiet',
-            'shortest': None
+            'loglevel': 'quiet'
         }
         print(f'duration: {duration}')
         if duration is not None:
