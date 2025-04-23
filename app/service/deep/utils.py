@@ -107,7 +107,7 @@ def has_audio(input_path):
 def restore_audio(target_path, output_path, duration):
     if has_audio(target_path) == False:
         logger.warning(f"target video {target_path} has no audio")
-        return Error.NoAudio
+        return Error.OK
     temp_path = output_path.replace('.mp4', '_noaudio.mp4')
     os.rename(output_path, temp_path)
 
