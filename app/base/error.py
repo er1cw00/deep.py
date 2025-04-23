@@ -14,4 +14,5 @@ class Error(Enum):
     NoFaceDetected = 'no face detected'
     UnknownResponse = 'unknown response'
     SubprocessFail = 'subprocess fail'
+    FFmpegError = 'ffmpeg error'
     Unauthorized = 'unauthorized'
