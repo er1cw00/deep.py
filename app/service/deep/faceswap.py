@@ -90,16 +90,21 @@ class FaceSwapper:
         if len(face_list) <= 0:
             return "", Error.NoFace
         
-        max_frame_count = total 
-        trim_duration = None
-        if task.trim_duration != None and task.trim_duration * fps < max_frame_count:
-            max_frame_count = int(task.trim_duration * fps)
-            trim_duration = task.trim_duration
-            
-        logger.info(f"task: {task.task_id}, total: {total}, fps: {fps}, max_frame_count: {max_frame_count}, trim_duration: {trim_duration}")
-        
+
         target_fps = min(self.max_fps, fps)
         frame_interval = fps / target_fps  # 用于均匀采样
+        
+        max_frame_count = total 
+        trim_duration = None
+        if task.trim_duration != None :
+            count = int(task.trim_duration * target_fps)
+            if count < max_frame_count:
+                max_frame_count = count
+                trim_duration = task.trim_duration
+            
+        
+        logger.info(f"task: {task.task_id}, total: {total}, target_fps: {target_fps}, max_frame_count: {max_frame_count}, trim_duration: {trim_duration}, frame_interval: {frame_interval}")
+        
         frame_index = 0
         new_frame_id = 0  # 目标视频的帧编号
         writer = get_video_writer(output_path, target_fps)
@@ -109,11 +114,12 @@ class FaceSwapper:
             if not ret:
                 break
             if new_frame_id * frame_interval <= frame_index:
-                crop_info =  self.yolo.detect(image=target, conf=self.face_detect_weight, order='left-right')
+                crop_info =  self.yolo.detect(image=target, conf=self.face_detect_weight, order='large-small')
                 output = self.swap(source, source_face=face_list[0], target=target, crop_info=crop_info)
                 writer.append_data(output[..., ::-1])
                 new_frame_id += 1
-
+            else:
+                print(f'skip frame_index: {frame_index}')
             frame_index += 1
         writer.close()
         cap.release()

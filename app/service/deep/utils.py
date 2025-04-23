@@ -136,15 +136,6 @@ def restore_audio(target_path, output_path, duration):
         return Error.Unknown
     
     return Error.OK
-    # ffmpeg.input(temp_path).output(
-    #     output_path,
-    #     #vf='fps={}'.format(fps),  # 保持帧率一致
-    #     i=target_path,
-    #     map='0:v:0',  # 使用处理后的视频
-    #     map='1:a:0?',  # 如果存在音频，则使用原音频
-    #     c='copy',
-    #     shortest=None
-    # ).run(overwrite_output=True)
     
 def get_video_writer(output_path, fps):
     video_format = 'mp4'     # default is mp4 format
