@@ -2,7 +2,10 @@ import os
 import sys
 import random
 import imageio
+import ffmpeg
+from loguru import logger
 from typing import Sequence, Mapping, Any, Union
+from app.base.error import Error
 
 
 
@@ -90,14 +93,50 @@ def add_comfy_path_to_sys_path(comfyui_path) -> None:
 
         print(f"'{comfyui_path}' added to sys.path")
 
+def restore_audio(target_path, output_path, duration):
+    temp_path = output_path.replace('.mp4', '_noaudio.mp4')
+    os.rename(output_path, temp_path)
+
+    try:
+        input_video = ffmpeg.input(temp_path)
+        input_audio = ffmpeg.input(target_path)
+
+        kwargs = {
+            'map': ['0:v:0', '1:a:0?'],
+            'c': 'copy',
+            'shortest': None
+        }
+        if duration is not None:
+            input_video = ffmpeg.input(temp_path, ss=0, to=duration)
+            input_audio = ffmpeg.input(target_path, ss=0, to=duration)
+            
+        ffmpeg.output(input_video, input_audio, output_path, **kwargs).run(overwrite_output=True)
+    except ffmpeg.Error as e:
+        logger.error('ffmpeg error:', e.stderr.decode() if e.stderr else str(e))
+        return Error.FFmpegError
+    except Exception as e:
+        logger.error('ffmpeg error:', e.stderr.decode() if e.stderr else str(e))
+        return Error.Unknown
+    
+    return Error.OK
+    # ffmpeg.input(temp_path).output(
+    #     output_path,
+    #     #vf='fps={}'.format(fps),  # 保持帧率一致
+    #     i=target_path,
+    #     map='0:v:0',  # 使用处理后的视频
+    #     map='1:a:0?',  # 如果存在音频，则使用原音频
+    #     c='copy',
+    #     shortest=None
+    # ).run(overwrite_output=True)
+    
 def get_video_writer(output_path, fps):
     video_format = 'mp4'     # default is mp4 format
-    codec = 'libx264'        # default is libx264 encoding
+    codec = 'libx265'        # default is libx264 encoding
     #quality = quality        # video quality
     pixelformat = 'yuv420p'  # video pixel format
     image_mode = 'rbg'
     macro_block_size = 2
-    ffmpeg_params = ['-crf', '18']
+    ffmpeg_params = ['-crf', '22', '-preset', 'medium', '-tag:v', 'hvc1']
     writer = imageio.get_writer(uri=output_path,
                         format=video_format,
                         fps=fps, 

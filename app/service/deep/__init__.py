@@ -4,8 +4,8 @@ import json
 import torch
 import subprocess
 import importlib.util
+from loguru import logger
 from app.model.task import TaskState, TaskType 
-from app.base.logger import logger
 from app.base.config import config
 from app.base.error import Error
 from .utils import add_tbox_path_to_sys_path, add_comfy_path_to_sys_path

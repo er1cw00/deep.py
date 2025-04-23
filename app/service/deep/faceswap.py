@@ -1,6 +1,7 @@
 import os
 import cv2
 import imageio
+from loguru import logger
 
 from facefusion.modules.inswapper import InSwapper
 from facefusion.modules.uniface import UniFace
@@ -11,7 +12,6 @@ from facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landm
 from facefusion.facemask import FaceMasker, FaceMaskConfig
 
 from app.base.error import Error
-from app.base.logger import logger
 from .utils import get_providers_from_device, get_video_writer
 
 class FaceSwapper:

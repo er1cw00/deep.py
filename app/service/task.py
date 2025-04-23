@@ -3,13 +3,13 @@ import requests
 import ffmpeg
 import traceback
 from PIL import Image
+from loguru import logger
 from pydantic import ValidationError
 from app.model.task import TaskInfo, TaskType, TaskState
 from app.model.schema import BaseResponse, GetDeepTaskResponse, UpdateDeepTaskRequest
 from app.base.media import get_mime_type_from_filepath, get_postfix_from_mime_type
 from app.base.config import config
 from app.base.error import Error
-from app.base.logger import logger
 from app.service.s3 import s3
 
 def ensure_dir(directory: str):
