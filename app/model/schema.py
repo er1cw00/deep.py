@@ -11,9 +11,10 @@ class KeepaliveResponse(BaseResponse):
 
 class VersionResponse(BaseResponse):
     env: str
-    build_time: str
     commit: str
     branch: str
+    version: str
+    build_time: str
 
 class GetDeepTaskResponse(BaseResponse):
     task: Optional[TaskInfo] = None
