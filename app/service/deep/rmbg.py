@@ -13,7 +13,7 @@ from app.base.error import Error
 class RMBG:
     def __init__(self, model_path, device):
         self.device = device
-        self.model_path = os.path.join(model_path, 'rmbg-1.4.pth')
+        self.model_path = os.path.join(model_path, 'bria/rmbg-1.4.pth')
         
         self.net = BriaV1()
         self.net.load(self.model_path, self.device)
