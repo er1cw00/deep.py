@@ -60,10 +60,9 @@ class Scheduler:
         interval = config.get('interval', 5)
         await asyncio.sleep(interval)
         while True:
-            logger.debug("scheule_task run....")
+            #logger.debug("scheule_task run....")
             try:
                 task = ts.get_task()
-                print(f"task: {task}")
                 if task != None:
                     self.dispatch_task(task)
             except Exception as e:
