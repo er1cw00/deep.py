@@ -83,7 +83,10 @@ class Deep:
         else:
             self._rmbg = None
             self._restore = None
-
+        if self.device == 'cuda':
+            torch.cuda.empty_cache() 
+            torch.cuda.ipc_collect()
+        
     def faceswap(self, task):
         from .faceswap import FaceSwapper
         self.reset(TaskType.FaceSwap)
