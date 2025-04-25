@@ -56,9 +56,9 @@ class Scheduler:
        
     async def scheule_task(self):
         """异步后台任务：定期拉取数据"""
-        logger.info('scheule_task >>>')
         interval = config.get('interval', 5)
-        await asyncio.sleep(interval)
+        logger.info(f'scheule_task >>> interval: {interval}')
+        await asyncio.sleep(5)
         while True:
             #logger.debug("scheule_task run....")
             try:
@@ -68,7 +68,7 @@ class Scheduler:
             except Exception as e:
                 logger.warning(f"Error fetching task: {e}")
                 traceback.print_exc()
-            await asyncio.sleep(5)
+            await asyncio.sleep(interval)
         
 @asynccontextmanager
 async def lifespan(app: FastAPI):
