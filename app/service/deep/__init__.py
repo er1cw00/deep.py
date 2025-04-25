@@ -14,7 +14,6 @@ class Deep:
     def __init__(self):        
         self._swapper = None
         self._rmbg = None
-        self._liveportrait = None
         self._restore = None  
         
         self.comfy_path = None
@@ -76,27 +75,55 @@ class Deep:
         lora = self.lora_map.get(name, self.lora_map.get('FilmVelvia3'))
         return lora['model'], lora['clip_skip']
     
+    def reset(self, task_type):
+        if task_type == TaskType.Rmbg:
+           self._restore = None
+        elif task_type == TaskType.FaceRestore:
+            self._rmbg = None
+        else:
+            self._rmbg = None
+            self._restore = None
+
     def faceswap(self, task):
         from .faceswap import FaceSwapper
+        self.reset(TaskType.FaceSwap)
         if self._swapper == None:
             self._swapper = FaceSwapper('inswapper_128', self.model_path, self.device)
         return self._swapper.process(task)
     
     def liveportrait(self, task):
-        from .liveportrait import LivePortrait
-        if self._liveportrait == None:
-            self._liveportrait = LivePortrait(self.model_path, self.device)
-        return self._liveportrait.process(task)
+        task_path = task.get_task_path()
+        output_path = os.path.join(task_path, 'output.mp4')
+        liveportrait_path = os.path.join(os.path.dirname(__file__), "comfy/live_portrait.py")
+        device = 'CPU'
+        if self.device == 'cuda':
+            device = 'CUDA'
+        elif self.device == 'mps':
+            device = 'CoreML'
+        commands = [
+                'python', liveportrait_path, 
+                '-c', self.comfy_path,
+                '-p', task_path,
+                '-d', device
+            ]
+        err = self.do_exec(commands=commands)
+        if err != Error.OK:
+            return err
+        
+        if os.path.isfile(output_path) == True:
+            return output_path, Error.OK
+        return '',  Error.FileNotFound
     
     def rmbg(self, task):
         from .rmbg import RMBG
+        self.reset(TaskType.Rmbg)
         if self._rmbg == None:
-            
             self._rmbg = RMBG(self.model_path, self.device)
         return self._rmbg.process(task)
     
     def restore(self, task):
         from .facerestore import FaceRestore
+        self.reset(TaskType.FaceRestore)
         if self._restore == None:
             self._restore = FaceRestore(self.model_path, self.device)
         return self._restore.process(task)
