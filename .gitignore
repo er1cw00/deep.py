@@ -174,3 +174,4 @@ cython_debug/
 .pypirc
 app/version.py
 *.mp4
+.DS_Store
