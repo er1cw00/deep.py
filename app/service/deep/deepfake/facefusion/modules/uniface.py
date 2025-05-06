@@ -79,8 +79,7 @@ class UniFace:
 
 
 if __name__ == "__main__":
-#    from liveportrait.utils.landmark_runner import draw_landmarks
-    from liveportrait.utils.video import images2video
+    from live_portrait.utils.video import images2video
     from facefusion.utils.affine import ffhq_512, arcface_128_v2, warp_face_by_landmark, paste_back, blend_frame
     from facefusion.utils.mask import create_bbox_mask
     from rich.progress import track

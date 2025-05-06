@@ -7,7 +7,7 @@ face detectoin and alignment using InsightFace
 import numpy as np
 from insightface.app import FaceAnalysis
 from insightface.app.common import Face
-from liveportrait.utils.timer import Timer
+from deepfake.utils.timer import Timer
 
 
 def sort_by_direction(faces, direction: str = 'large-small', face_center=None):

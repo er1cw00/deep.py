@@ -155,8 +155,8 @@ class YoloFace:
         return faces
 
 if __name__ == "__main__":
-    from liveportrait.utils.helper import draw_landmarks
-    from liveportrait.utils.video import images2video
+    from live_portrait.utils.helper import draw_landmarks
+    from live_portrait.utils.video import images2video
     from rich.progress import track
     
     def test_image(detector):

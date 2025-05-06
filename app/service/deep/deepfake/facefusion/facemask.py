@@ -7,11 +7,11 @@ from .modules.resnet34 import Resnet34
 from .utils.mask import create_bbox_mask, FaceMaskRegion, FaceMaskRegionMap, FaceMaskAllRegion
 from dataclasses import dataclass, field 
 from typing import Literal, List, Tuple
-from liveportrait.config.base_config import PrintableConfig
+from deepfake.utils import Printable
 
 
-@dataclass(repr=False)  # use repr from PrintableConfig
-class FaceMaskConfig(PrintableConfig):
+@dataclass(repr=False)  # use repr from Printable
+class FaceMaskConfig(Printable):
     providers:  List[str] = field(default_factory=lambda: ["CPUExecutionProvider"])
     model_path: str = ""
     bbox: bool = True
@@ -56,32 +56,3 @@ class FaceMasker(object):
             box_mask = cv2.GaussianBlur(box_mask, (0, 0), blur_amount * 0.25)
         return box_mask
     
-
-
-if __name__ == "__main__":
-    from .yoloface import YoloFace
-    from rich.progress import track
-    from ..utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark, paste_back, blend_frame
-    
-    import imageio
-    import cv2
-    import time
-    import os
-        
-    def get_video_writer(outout_path, fps):
-            video_format = 'mp4'     # default is mp4 format
-            codec = 'libx265'        # default is libx264 encoding
-            #quality = quality        # video quality
-            pixelformat = 'yuv420p'  # video pixel format
-            image_mode = 'rbg'
-            macro_block_size = 2
-            ffmpeg_params = ['-crf', '22', '-preset', 'medium', '-tag:v', 'hvc1']
-            writer = imageio.get_writer(uri=outout_path,
-                                format=video_format,
-                                fps=fps, 
-                                codec=codec, 
-                                #quality=quality, 
-                                ffmpeg_params=ffmpeg_params, 
-                                pixelformat=pixelformat, 
-                                macro_block_size=macro_block_size)
-            return writer

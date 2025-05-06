@@ -7,7 +7,9 @@ import cv2
 import numpy as np
 import onnxruntime
 
-class XSeg:
+
+class Occluder:
+    
     def __init__(self, model_path, providers):
         self.session  = onnxruntime.InferenceSession(model_path, providers=providers)
         print(f'current providers: {self.session.get_providers()}') 
@@ -15,19 +17,24 @@ class XSeg:
         inputs = self.session.get_inputs()
         for input in inputs:
             print(f'inputs name: {input.name}, shape: {input.shape}')
-            
-        self.input_size = (inputs[0].shape[1], inputs[0].shape[2])
+        
+        self.input_size = (inputs[0].shape[2], inputs[0].shape[3])
         self.input_name = inputs[0].name
         self.affine = False
-    
+        
     def pre_process(self, image):
         img = cv2.resize(image, self.input_size)
-        img = np.expand_dims(img, axis = 0).astype(np.float32) / 255
-        img = img.transpose(0, 1, 2, 3)
+        #img = img.astype(np.float32) / 255.0
+        print(f'input image 0 shape: {img.shape}')
+        img = img.transpose(2, 0, 1).astype(np.float32) / 255
+        print(f'input image 1 shape: {img.shape}')
+        img = np.expand_dims(img, axis = 0)#.astype(np.float32) / 255
+        print(f'input image 2 shape: {img.shape}')
+        #img = img.transpose(0, 1, 2, 3)
         return img
     
     def post_process(self, output, height, width):
-        mask = output.transpose(0, 1, 2).clip(0, 1).astype(np.float32)
+        mask = output.transpose(1, 2, 0).clip(0, 1).astype(np.float32)
         mask = cv2.resize(mask, (width, height))
         mask = (cv2.GaussianBlur(mask.clip(0, 1), (0, 0), 5).clip(0.5, 1) - 0.5) * 2
         return mask
@@ -36,16 +43,16 @@ class XSeg:
         height, width = image.shape[0], image.shape[1]
         img = self.pre_process(image)
         #t = timeit.default_timer()
-        print(f'input shape: {img.shape}')
+        print(f'input image shape: {img.shape}')
         outputs = self.session.run(None, {self.input_name: img})
+        #print(f'outputs image shape: {outputs}')
         output = outputs[0][0]
-        print(f'outputs: {outputs}')
-        print(f'output shape: {output.shape}')
+        print(f'output image shape: {output.shape}')
         output = self.post_process(output, height, width)
-        
         #print('infer time:',timeit.default_timer()-t)  
         return output
-        
+    
+      
 if __name__ == "__main__":
     from .yoloface import YoloFace
     from .occluder import Occluder
@@ -93,8 +100,8 @@ if __name__ == "__main__":
         
         
     def test_video(yolo, xseg1, xseg2):
-        input_path = '/Users/wadahana/Desktop/sis/faceswap/test/sq/suck2.mp4 '
-        output_path = './suck2_mask.mp4'
+        input_path = '../suck2.mp4'
+        output_path = '../suck2_mask.mp4'
         
         cap = cv2.VideoCapture(input_path)
         fps = cap.get(cv2.CAP_PROP_FPS)  # 获取视频帧率
@@ -168,12 +175,4 @@ if __name__ == "__main__":
     #xseg1 = XSeg(model_path=seg1_path, providers=providers)
     test_image(yolo, xseg)
 
-    
-
-    
-
-
-    
-    #providers=['CPUExecutionProvider', 'CoreMLExecutionProvider', 'CUDAExecutionProvider']
-   
     

@@ -9,12 +9,12 @@ from .modules.gfpgan import GFPGAN
 from .modules.yoloface import YoloFace
 from .utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark, paste_back, blend_frame
 from .facemask import FaceMasker
-from liveportrait.config.base_config import PrintableConfig
+from deepfake.utils import Printable
 
 
 
-@dataclass(repr=False)  # use repr from PrintableConfig
-class FaceSwapConfig(PrintableConfig):
+@dataclass(repr=False)  # use repr from Printable
+class FaceSwapConfig(Printable):
     dsize: Tuple[int,int] = (256,256) # input shape
     model_name: Literal['inswapper_128', 'uniface_256'] = 'inswapper_128'
     model_path: str = ''
