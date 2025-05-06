@@ -37,7 +37,7 @@ class FaceAnalysisDIY(FaceAnalysis):
 
         self.timer = Timer()
 
-    def get(self, img_bgr, **kwargs):
+    def detect(self, img_bgr, **kwargs):
         max_num = kwargs.get('max_face_num', 0)  # the number of the detected faces, 0 means no limit
         flag_do_landmark_2d_106 = kwargs.get('flag_do_landmark_2d_106', True)  # whether to do 106-point detection
         direction = kwargs.get('direction', 'large-small')  # sorting direction
@@ -72,7 +72,7 @@ class FaceAnalysisDIY(FaceAnalysis):
         self.timer.tic()
 
         img_bgr = np.zeros((512, 512, 3), dtype=np.uint8)
-        self.get(img_bgr)
+        self.detect(img_bgr)
 
         elapse = self.timer.toc()
         print(f'FaceAnalysisDIY warmup time: {elapse:.3f}s')

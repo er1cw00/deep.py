@@ -4,17 +4,9 @@ import onnx
 import onnxruntime
 import numpy as np
 from collections import namedtuple
-from typing import List, Literal
-
-Face = namedtuple('Face',
-[
-	'bounding_box',
-	'landmarks',
-	'scores',
-])
+from typing import List
+from deepfake.utils.face import Face, FaceAnalyserOrder
  
-FaceAnalyserOrder = Literal['left-right', 'right-left', 'top-bottom', 'bottom-top', 'small-large', 'large-small', 'best-worst', 'worst-best']
-
 class YoloFace:
     def __init__(self, model_path, providers):
         self.session = onnxruntime.InferenceSession(model_path, providers=providers)
@@ -52,12 +44,9 @@ class YoloFace:
             bounding_box = bounding_box_list[index]
             face_landmark = face_landmark_5_list[index]
             score = score_list[index],
-            #print(f'bounding_box  >> : {bounding_box}')
-            face_list.append((
-				self.expand_bounding_box(size, bounding_box),
-				face_landmark,
-				score,
-			))
+            face_list.append(Face(bbox=self.expand_bounding_box(size, bounding_box),
+                                    landmarks=face_landmark, 
+                                    score=score))
         return face_list
             
     def apply_nms(self, bounding_box_list, iou_threshold):
@@ -137,21 +126,21 @@ class YoloFace:
     
     def sort_by_order(self, faces : List[Face], order : FaceAnalyserOrder) -> List[Face]:
         if order == 'left-right':
-            return sorted(faces, key = lambda face: face[0][0])
+            return sorted(faces, key = lambda face: face.bbox[0])
         if order == 'right-left':
-            return sorted(faces, key = lambda face: face[0][0], reverse = True)
+            return sorted(faces, key = lambda face: face.bbox[0], reverse = True)
         if order == 'top-bottom':
-            return sorted(faces, key = lambda face: face[0][1])
+            return sorted(faces, key = lambda face: face.bbox[1])
         if order == 'bottom-top':
-            return sorted(faces, key = lambda face: face[0][1], reverse = True)
+            return sorted(faces, key = lambda face: face.bbox[1], reverse = True)
         if order == 'small-large':
-            return sorted(faces, key = lambda face: (face[0][2] - face[0][0]) * (face[0][3] - face[0][1]))
+            return sorted(faces, key = lambda face: (face.bbox[2] - face.bbox[0]) * (face.bbox[3] - face.bbox[1]))
         if order == 'large-small':
-            return sorted(faces, key = lambda face: (face[0][2] - face[0][0]) * (face[0][3] - face[0][1]), reverse = True)
+            return sorted(faces, key = lambda face: (face.bbox[2] - face.bbox[0]) * (face.bbox[3] - face.bbox[1]), reverse = True)
         if order == 'best-worst':
-            return sorted(faces, key = lambda face: face[2], reverse = True)
+            return sorted(faces, key = lambda face: face.score, reverse = True)
         if order == 'worst-best':
-            return sorted(faces, key = lambda face: face[2])
+            return sorted(faces, key = lambda face: face.score)
         return faces
 
 if __name__ == "__main__":
