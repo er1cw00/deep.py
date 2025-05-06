@@ -35,12 +35,8 @@ class XSeg:
     def detect(self, image):
         height, width = image.shape[0], image.shape[1]
         img = self.pre_process(image)
-        #t = timeit.default_timer()
-        print(f'input shape: {img.shape}')
         outputs = self.session.run(None, {self.input_name: img})
         output = outputs[0][0]
-        print(f'outputs: {outputs}')
-        print(f'output shape: {output.shape}')
         output = self.post_process(output, height, width)
         
         #print('infer time:',timeit.default_timer()-t)  

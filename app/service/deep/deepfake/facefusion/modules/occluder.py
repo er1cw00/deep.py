@@ -24,13 +24,8 @@ class Occluder:
         
     def pre_process(self, image):
         img = cv2.resize(image, self.input_size)
-        #img = img.astype(np.float32) / 255.0
-        print(f'input image 0 shape: {img.shape}')
         img = img.transpose(2, 0, 1).astype(np.float32) / 255
-        print(f'input image 1 shape: {img.shape}')
-        img = np.expand_dims(img, axis = 0)#.astype(np.float32) / 255
-        print(f'input image 2 shape: {img.shape}')
-        #img = img.transpose(0, 1, 2, 3)
+        img = np.expand_dims(img, axis = 0)
         return img
     
     def post_process(self, output, height, width):
@@ -42,14 +37,9 @@ class Occluder:
     def detect(self, image):
         height, width = image.shape[0], image.shape[1]
         img = self.pre_process(image)
-        #t = timeit.default_timer()
-        print(f'input image shape: {img.shape}')
         outputs = self.session.run(None, {self.input_name: img})
-        #print(f'outputs image shape: {outputs}')
         output = outputs[0][0]
-        print(f'output image shape: {output.shape}')
-        output = self.post_process(output, height, width)
-        #print('infer time:',timeit.default_timer()-t)  
+        output = self.post_process(output, height, width) 
         return output
     
       
