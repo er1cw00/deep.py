@@ -30,5 +30,5 @@ class Timer(object):
         self.start_time = 0.
         self.diff = 0.
 
-    def show(self):
-        print(f'total time: {self.total_time:.3f}s, for calls {self.calls} times')
+    def show(self, label):
+        print(f'{label}, total time: {self.total_time:.3f}s, for calls {self.calls} times')

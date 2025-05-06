@@ -50,6 +50,7 @@ if __name__ == "__main__":
     from .yoloface import YoloFace
     from .occluder import Occluder
     from rich.progress import track
+    from ..utils.mask import overlay_mask_on_face
     from ..utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark, paste_back, blend_frame
     #from deep.utils import get_providers_from_device, get_video_writer
     
@@ -61,17 +62,7 @@ if __name__ == "__main__":
 
     os.environ["ORT_LOGGING_LEVEL"] = "VERBOSE"
         
-    def overlay_mask_on_face(face_img, mask, alpha=0.5, color=(0, 0, 255)):
-        overlay = face_img.copy()
-        red_layer = np.full_like(face_img, color, dtype=np.uint8)
     
-        # 扩展 mask 到 3 通道（方便融合）
-        mask_3ch = np.stack([mask]*3, axis=-1).astype(np.uint8)
-
-        # 只对 mask 区域应用 alpha 混合
-        overlay = np.where(mask_3ch > 0, cv2.addWeighted(red_layer, alpha, face_img, 1 - alpha, 0), face_img)
-        
-        return overlay
 # input_path = '/Users/wadahana/Desktop/sis/faceswap/test/sq/suck2.mp4'
 # input_path = '/Users/wadahana/Desktop/sis/faceswap/test/mask/0ef45196ed648cb592f89dd89d436dec/target.jpg'
     def test_image(yolo, xseg):
