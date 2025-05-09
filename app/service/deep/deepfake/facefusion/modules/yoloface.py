@@ -5,7 +5,7 @@ import onnxruntime
 import numpy as np
 from collections import namedtuple
 from typing import List
-from deepfake.utils.face import Face, FaceAnalyserOrder
+from deepfake.utils.face import Face, sort_by_order, FaceAnalyserOrder
  
 class YoloFace:
     def __init__(self, model_path, providers):
@@ -43,9 +43,9 @@ class YoloFace:
         for index in keep_indices:
             bounding_box = bounding_box_list[index]
             face_landmark = face_landmark_5_list[index]
-            score = score_list[index],
-            face_list.append(Face(bbox=self.expand_bounding_box(size, bounding_box),
-                                    landmarks=face_landmark, 
+            score = score_list[index]
+            face_list.append(Face(bbox=bounding_box, #self.expand_bounding_box(size, bounding_box),
+                                    landmark_5=face_landmark, 
                                     score=score))
         return face_list
             
@@ -89,7 +89,7 @@ class YoloFace:
         y2_expanded = min(y2 + expansion, size[0])
         return [x1_expanded, y1_expanded, x2_expanded, y2_expanded]
 
-    def detect(self, image, conf, order='left-right'):
+    def get(self, image, conf, order='left-right'):
         img = self.resize_frame_resolution(image, self.input_size)
         detect_img = self.pre_process(img)
         ratio_height = image.shape[0] / img.shape[0]
@@ -121,78 +121,35 @@ class YoloFace:
         
         faces = self.post_process(image.shape, bounding_box_list, face_landmark_5_list, score_list)
         if len(faces) > 1:
-            faces = self.sort_by_order(faces, order)
+            faces = sort_by_order(faces, order)
         return faces 
     
-    def sort_by_order(self, faces : List[Face], order : FaceAnalyserOrder) -> List[Face]:
-        if order == 'left-right':
-            return sorted(faces, key = lambda face: face.bbox[0])
-        if order == 'right-left':
-            return sorted(faces, key = lambda face: face.bbox[0], reverse = True)
-        if order == 'top-bottom':
-            return sorted(faces, key = lambda face: face.bbox[1])
-        if order == 'bottom-top':
-            return sorted(faces, key = lambda face: face.bbox[1], reverse = True)
-        if order == 'small-large':
-            return sorted(faces, key = lambda face: (face.bbox[2] - face.bbox[0]) * (face.bbox[3] - face.bbox[1]))
-        if order == 'large-small':
-            return sorted(faces, key = lambda face: (face.bbox[2] - face.bbox[0]) * (face.bbox[3] - face.bbox[1]), reverse = True)
-        if order == 'best-worst':
-            return sorted(faces, key = lambda face: face.score, reverse = True)
-        if order == 'worst-best':
-            return sorted(faces, key = lambda face: face.score)
-        return faces
 
 if __name__ == "__main__":
-    from live_portrait.utils.helper import draw_landmarks
-    from live_portrait.utils.video import images2video
+    from deepfake.utils.face import draw_landmarks
+    from deepfake.utils.video import get_video_writer
     from rich.progress import track
     
-    def test_image(detector):
+    def test_image(detector, input_path, output_path):
         #input = '/Users/wadahana/Desktop/ad_enhance-d77b92ad.png'
-        input = "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task/20250405/ec6ee635b4742b08e0fdea6c03769514/source.jpg"
-        image = cv2.imread(input)
-        face_list = detector.detect(image=image, conf=0.5, order='best-worst')
+        #input = "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task/20250405/ec6ee635b4742b08e0fdea6c03769514/source.jpg"
+        
+        image = cv2.imread(input_path)
+        face_list = detector.get(image=image, conf=0.5, order='best-worst')
         face = face_list[0]
         res = [512, 512]
-        #box_mask = create_box_mask(res, 0.3, (0,0,0,0))
-        #crop_mask = np.minimum.reduce([box_mask]).clip(0, 1)
-        image = draw_landmarks(image, face[1])
 
-        x1, y1, x2, y2 = map(int, face[0])
+        image = draw_landmarks(image, face.landmarks)
+
+        x1, y1, x2, y2 = map(int, face.bbox)
         face_crop = image[y1:y2, x1:x2]
         cv2.rectangle(image, (x1,y1), (x2,y2), (255, 0, 0), 1)
         resized_face = cv2.resize(face_crop, (512, 512))
-        cv2.imwrite('/Users/wadahana/Desktop/output.jpg', image)
-        #cv2.imwrite('/Users/wadahana/Desktop/output_mask_png', crop_mask)
         
-    def adjust_bounding_box(bbox, width, height, dsize=512):
-        x1, y1, x2, y2 = map(int, bbox)
+        cv2.imwrite(output_path, image)
+       
+        
 
-        # 计算中心点
-        cx = (x1 + x2) // 2
-        cy = (y1 + y2) // 2
-
-        # 计算新的边界框
-        new_x1 = max(0, cx - dsize // 2)
-        new_y1 = max(0, cy - dsize // 2)
-        new_x2 = min(width, cx + dsize // 2)
-        new_y2 = min(height, cy + dsize // 2)
-
-        # 如果因超出边界导致尺寸不足512x512，进行调整
-        if new_x2 - new_x1 < dsize:
-            if new_x1 == 0:
-                new_x2 = min(width, new_x1 + dsize)
-            else:
-                new_x1 = max(0, new_x2 - dsize)
-
-        if new_y2 - new_y1 < dsize:
-            if new_y1 == 0:
-                new_y2 = min(height, new_y1 + dsize)
-            else:
-                new_y1 = max(0, new_y2 - dsize)
-
-        return (new_x1, new_y1, new_x2, new_y2)
 
     def test_video(detector):
         from facefusion.utils.affine import warp_face_by_landmark, paste_back
@@ -228,14 +185,19 @@ if __name__ == "__main__":
             
             frames.append(frame)
     
-        images2video(frames, wfp='../output_yoloface.mp4', fps=fps)
+        #images2video(frames, wfp='../output_yoloface.mp4', fps=fps)
         cap.release()
 
 
 
-    model_path = '../../../models/facefusion/yoloface_8n.onnx'
+    #model_path = '../../../models/facefusion/yoloface_8n.onnx'
+    model_path = "/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx"
     providers=['CPUExecutionProvider', 'CoreMLExecutionProvider', 'CUDAExecutionProvider']
    
-    detector = YoloFace(model_path=model_path, providers=providers)
-    test_image(detector)
+    yolo = YoloFace(model_path=model_path, providers=providers)
+    input_path = "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task/20250405/ec6ee635b4742b08e0fdea6c03769514/source.jpg"
+    output_path = "/Users/wadahana/Desktop/output_face.jpg"    
+        
+    test_image(yolo, input_path, output_path)
+    
     print('test yoloface_onnx finished! ')
