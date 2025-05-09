@@ -10,30 +10,11 @@ from deepfake.facefusion.modules.xseg import XSeg
 from deepfake.facefusion.utils.mask import overlay_mask_on_face
 from deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark, paste_back, blend_frame
 from deepfake.utils.timer import Timer
+from deepfake.utils.video import get_video_writer
+from .file import get_test_files
 
 os.environ["ORT_LOGGING_LEVEL"] = "VERBOSE"        
     
-# input_path = '/Users/wadahana/Desktop/sis/faceswap/test/sq/suck2.mp4'
-# input_path = '/Users/wadahana/Desktop/sis/faceswap/test/mask/0ef45196ed648cb592f89dd89d436dec/target.jpg'
-
-def get_video_writer(outout_path, fps):
-    video_format = 'mp4'     # default is mp4 format
-    codec = 'libx265'        # default is libx264 encoding
-    #quality = quality        # video quality
-    pixelformat = 'yuv420p'  # video pixel format
-    image_mode = 'rbg'
-    macro_block_size = 2
-    ffmpeg_params = ['-crf', '22', '-preset', 'medium', '-tag:v', 'hvc1', '-loglevel', 'quiet']
-    writer = imageio.get_writer(uri=outout_path,
-                        format=video_format,
-                        fps=fps, 
-                        codec=codec, 
-                        #quality=quality, 
-                        ffmpeg_params=ffmpeg_params, 
-                        pixelformat=pixelformat, 
-                        macro_block_size=macro_block_size)
-    return writer
-
 def test_image(yolo, xseg1, xseg2, input_path, output_path):
 
     image = cv2.imread(input_path)
@@ -135,30 +116,15 @@ xseg1 = XSeg(model_path=seg1_path, providers=providers)
     # input_path = '/Users/wadahana/Desktop/sis/faceswap/test/sq/suck2.mp4 '
     # output_path = './suck2_mask.mp4'
     
-MASK_DIR = '/home/eric/workspace/AI/sd/temp/mask'
 
-photo_list = []
-video_list = []
+photo_list, video_list = get_test_files()
 
-for subdir in os.listdir(MASK_DIR):
-    subdir_path = os.path.join(MASK_DIR, subdir)
-    if not os.path.isdir(subdir_path):
-        continue
-
-    target_jpg = os.path.join(subdir_path, 'target.jpg')
-    target_mp4 = os.path.join(subdir_path, 'target.mp4')
-
-    if os.path.isfile(target_jpg):
-        photo_list.append(subdir_path)
-    elif os.path.isfile(target_mp4):
-        video_list.append(subdir_path)
-
-# print("Photo directories:")
-# for path in photo_list:
-#     input_path = os.path.join(path, 'target.jpg')
-#     output_path = os.path.join(path, 'output_mask2.png')
-#     print(path)
-#     test_image(yolo, xseg0, xseg1, input_path, output_path)
+print("Photo directories:")
+for path in photo_list:
+    input_path = os.path.join(path, 'target.jpg')
+    output_path = os.path.join(path, 'output_mask2.png')
+    print(path)
+    test_image(yolo, xseg0, xseg1, input_path, output_path)
 
 print("\nVideo directories:")
 for path in video_list:

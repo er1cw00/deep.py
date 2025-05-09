@@ -1,100 +1,153 @@
+import os
 import cv2
+import numpy as np
 from rich.progress import track
-from deepfake.utils.helper import draw_landmarks
+from deepfake.utils.face import draw_landmarks
 from deepfake.facefusion.modules.yoloface import YoloFace
 from deepfake.facefusion.modules.face_analysis_diy import FaceAnalysisDIY
-#from live_portrait.utils.video import images2video
-
+from deepfake.utils.face import expand_bbox
+from deepfake.utils.timer import Timer
+from deepfake.utils.video import get_video_writer
+from .file import get_test_files
     
-def test_image(detector):
-    #input = '/Users/wadahana/Desktop/ad_enhance-d77b92ad.png'
-    input = "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task/20250405/ec6ee635b4742b08e0fdea6c03769514/source.jpg"
-    image = cv2.imread(input)
-    face_list = detector.detect(image=image, conf=0.5, order='best-worst')
-    face = face_list[0]
-    res = [512, 512]
-    #box_mask = create_box_mask(res, 0.3, (0,0,0,0))
-    #crop_mask = np.minimum.reduce([box_mask]).clip(0, 1)
+def get_one_face(det, image):
+    face_list = det.get(image=image, conf=0.5, order='best-worst')
+    if face_list != None and len(face_list) > 0:
+        return face_list[0]
+    return None
+
+# def draw_bbox(image, face):
+#     x1, y1, x2, y2 = map(int, face.bbox)
+#     cv2.rectangle(image, (x1,y1), (x2,y2), (255, 0, 0), 1)
+#     (new_x1, new_y1, new_x2, new_y2) = expand_bbox(face.bbox, 512)
+#     face_cropped = image[new_y1:new_y2, new_x1:new_x2]
+#     resized_face = cv2.resize(face_cropped, (512, 512))
+#     return resized_face
     
-    image = draw_landmarks(image, face[1])
+def test_image(det1, det2, input_path, output_path):
+    t1 = Timer()
+    t2 = Timer()
 
-    x1, y1, x2, y2 = map(int, face[0])
-    face_crop = image[y1:y2, x1:x2]
-    cv2.rectangle(image, (x1,y1), (x2,y2), (255, 0, 0), 1)
-    resized_face = cv2.resize(face_crop, (512, 512))
-    cv2.imwrite('/Users/wadahana/Desktop/output.jpg', image)
-    #cv2.imwrite('/Users/wadahana/Desktop/output_mask_png', crop_mask)
-        
-    def adjust_bounding_box(bbox, width, height, dsize=512):
-        x1, y1, x2, y2 = map(int, bbox)
-
-        # 计算中心点
-        cx = (x1 + x2) // 2
-        cy = (y1 + y2) // 2
-
-        # 计算新的边界框
-        new_x1 = max(0, cx - dsize // 2)
-        new_y1 = max(0, cy - dsize // 2)
-        new_x2 = min(width, cx + dsize // 2)
-        new_y2 = min(height, cy + dsize // 2)
-
-        # 如果因超出边界导致尺寸不足512x512，进行调整
-        if new_x2 - new_x1 < dsize:
-            if new_x1 == 0:
-                new_x2 = min(width, new_x1 + dsize)
-            else:
-                new_x1 = max(0, new_x2 - dsize)
-
-        if new_y2 - new_y1 < dsize:
-            if new_y1 == 0:
-                new_y2 = min(height, new_y1 + dsize)
-            else:
-                new_y1 = max(0, new_y2 - dsize)
-
-        return (new_x1, new_y1, new_x2, new_y2)
-
-    def test_video(detector):
-        from facefusion.utils.affine import warp_face_by_landmark, paste_back
-        #video_input = '../assets/dzq.mp4'
-        
-        video_input = '/Users/wadahana/Desktop/sis/faceswap/test/sq/suck2/suck2-short.mp4'
-        cap = cv2.VideoCapture(video_input)
-        fps = cap.get(cv2.CAP_PROP_FPS)  # 获取视频帧率
-        total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))  # 获取视频宽度
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))  # 获取视频高度
-        
-        frames = []
-        #while True:
-        for i in track(range(total), description='Detecting....', transient=True):
-            ret, frame = cap.read()
-            if not ret:
-                break
-            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-            face_list = detector.detect(image=frame, conf=0.7)
-            if len(face_list) == 0:
-                continue
-            face = face_list[0]
-            frame = draw_landmarks(frame, face[1])
-            x1, y1, x2, y2 = map(int, face[0])
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2) 
-
-            #(x1, y1, x2, y2) = adjust_bounding_box(bbox=face.bounding_box, width=width, height=height, dsize=512)
-            face_crop = frame[y1:y2, x1:x2]
-            resized_face = cv2.resize(face_crop, (512, 512))
-            #frames.append(resized_face)
-            #out.write(resized_face)
-            
-            frames.append(frame)
+    image = cv2.imread(input_path)
+    t1.tic()
+    face1 = get_one_face(det1, image)
+    t1.toc()
     
-        images2video(frames, wfp='../output_yoloface.mp4', fps=fps)
-        cap.release()
+    t2.tic()
+    face2 = get_one_face(det2, image)
+    t2.toc()
+    
+    color = (0, 0, 200)
+    
+    if face1 != None:
+        output1 = draw_landmarks(image.copy(), face1.landmark_5)
+        x1, y1, x2, y2 = map(int, face1.bbox)
+        cv2.rectangle(output1, (x1,y1), (x2,y2), color, 2)
+        cv2.putText(output1, f'{face2.score:.4f}', (x1,y1), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+    else:
+        output1 = np.zeros_like(image)
+        
+    if face2 != None:
+        output2 = draw_landmarks(image.copy(), face2.landmark_5)  
+        x1, y1, x2, y2 = map(int, face2.bbox)
+        cv2.rectangle(output2, (x1,y1), (x2,y2), color, 2)
+        cv2.putText(output2, f'{face2.score:.4f}', (x1,y1), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+    else:
+        output2 = np.zeros_like(image)
+        
+    combined = cv2.hconcat([image, output1, output2])
+    cv2.imwrite(output_path, combined)
+    t1.show('yoloface')
+    t2.show('insightface')
+        
+def test_video(det1, det2, input_path, output_path):
+    t1 = Timer()
+    t2 = Timer()
 
+    cap = cv2.VideoCapture(input_path)
+    fps = cap.get(cv2.CAP_PROP_FPS)  # 获取视频帧率
+    total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))  # 获取视频宽度
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))  # 获取视频高度
+        
+    print(f'video [{width}x{height}@{fps}] {total} frames!')
+    
+    writer = get_video_writer(output_path, fps)
+    for i in track(range(total), description='Detecting....', transient=True):
+        ret, frame = cap.read()
+        if not ret:
+            break
+        #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        t1.tic()
+        face1 = get_one_face(det1, frame)
+        t1.toc()
+        
+        t2.tic()
+        face2 = get_one_face(det2, frame)
+        t2.toc()
+        
+        color = (10,200,10)
+        if face1 == None:
+            output1 = np.zeros_like(frame)
+        else:
+            output1 = draw_landmarks(frame.copy(), face1.landmark_5)
+            x1, y1, x2, y2 = map(int, face1.bbox)
+            cv2.rectangle(output1, (x1,y1), (x2,y2), color, 2)
+            cv2.putText(output1, f'{face1.score:.4f}', (x1,y1), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+         
+        if face2 == None:
+            output2 = np.zeros_like(frame)
+        else:
+            output2 = draw_landmarks(frame.copy(), face2.landmark_5)
+            x1, y1, x2, y2 = map(int, face2.bbox)
+            cv2.rectangle(output2, (x1,y1), (x2,y2), color, 2)
+            cv2.putText(output2, f'{face2.score:.4f}', (x1,y1), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+                       
+            combined = cv2.hconcat([frame, output1, output2])
+            writer.append_data(combined[..., ::-1])
 
+    cap.release()
+    writer.close()
+    
+    t1.show('yoloface')
+    t2.show('insightface')
+    
+insightface_path = '../../../models/insightface'
+#insightface_path = "/Users/wadahana/workspace/AI/sd/ComfyUI/models/insightface"
+providers=['CPUExecutionProvider', 'CoreMLExecutionProvider', 'CUDAExecutionProvider']
 
-    model_path = '../../../models/facefusion/yoloface_8n.onnx'
-    providers=['CPUExecutionProvider', 'CoreMLExecutionProvider', 'CUDAExecutionProvider']
-   
-    detector = YoloFace(model_path=model_path, providers=providers)
-    test_image(detector)
-    print('test yoloface_onnx finished! ')
+yolo_path = '../../../models/facefusion/yoloface_8n.onnx'
+#yolo_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx'
+providers=['CPUExecutionProvider', 'CoreMLExecutionProvider', 'CUDAExecutionProvider']
+
+yolo = YoloFace(model_path=yolo_path, providers=providers)
+
+insight = FaceAnalysisDIY(name="buffalo_l", root=insightface_path, providers=providers)
+insight.prepare(ctx_id=0, det_size=(512, 512), det_thresh=0.5)
+insight.warmup()
+
+# input_path = "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task/20250405/ec6ee635b4742b08e0fdea6c03769514/source.jpg"
+# output_path = "/Users/wadahana/Desktop/output_face.jpg"    
+# test_image(yolo, insight, input_path=input_path, output_path=output_path)
+
+# input_path = "/Users/wadahana/Desktop/sis/faceswap/test/mask/fbb6081fa3544ba51e4058b71660cfe3/target.mp4"
+# output_path = "/Users/wadahana/Desktop/output_face.mp4"    
+# test_video(yolo, insight, input_path=input_path, output_path=output_path)
+
+photo_list, video_list = get_test_files()
+
+print("Photo directories:")
+for path in photo_list:
+    input_path = os.path.join(path, 'target.jpg')
+    output_path = os.path.join(path, 'output_face.png')
+    print(path)
+    test_image(yolo, yolo, insight, input_path, output_path)
+
+print("\nVideo directories:")
+for path in video_list:
+    input_path = os.path.join(path, 'target.mp4')
+    output_path = os.path.join(path, 'output_face.mp4')
+    print(path)
+    test_video(yolo, yolo, insight, input_path, output_path)
+    
+print('test face detect finished! ')
