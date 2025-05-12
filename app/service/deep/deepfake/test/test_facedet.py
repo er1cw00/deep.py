@@ -43,7 +43,7 @@ def test_image(det1, det2, input_path, output_path):
         output1 = draw_landmarks(image.copy(), face1.landmark_5)
         x1, y1, x2, y2 = map(int, face1.bbox)
         cv2.rectangle(output1, (x1,y1), (x2,y2), color, 2)
-        cv2.putText(output1, f'{face2.score:.4f}', (x1,y1), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+        cv2.putText(output1, f'{face1.score:.4f}', (x1,y1), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
     else:
         output1 = np.zeros_like(image)
         
@@ -112,13 +112,13 @@ def test_video(det1, det2, input_path, output_path):
     t1.show('yoloface')
     t2.show('insightface')
     
-insightface_path = '../../../models/insightface'
+insightface_path = '/home/eric/workspace/AI/sd/ComfyUI/models/insightface'
 #insightface_path = "/Users/wadahana/workspace/AI/sd/ComfyUI/models/insightface"
-providers=['CPUExecutionProvider', 'CoreMLExecutionProvider', 'CUDAExecutionProvider']
+providers=['CUDAExecutionProvider', 'CPUExecutionProvider', 'CoreMLExecutionProvider']
 
-yolo_path = '../../../models/facefusion/yoloface_8n.onnx'
+yolo_path = '/home/eric/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx'
 #yolo_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx'
-providers=['CPUExecutionProvider', 'CoreMLExecutionProvider', 'CUDAExecutionProvider']
+providers=['CUDAExecutionProvider', 'CPUExecutionProvider', 'CoreMLExecutionProvider']
 
 yolo = YoloFace(model_path=yolo_path, providers=providers)
 
@@ -141,13 +141,13 @@ for path in photo_list:
     input_path = os.path.join(path, 'target.jpg')
     output_path = os.path.join(path, 'output_face.png')
     print(path)
-    test_image(yolo, yolo, insight, input_path, output_path)
+    test_image(yolo, insight, input_path, output_path)
 
 print("\nVideo directories:")
 for path in video_list:
     input_path = os.path.join(path, 'target.mp4')
     output_path = os.path.join(path, 'output_face.mp4')
     print(path)
-    test_video(yolo, yolo, insight, input_path, output_path)
+    test_video(yolo, insight, input_path, output_path)
     
 print('test face detect finished! ')

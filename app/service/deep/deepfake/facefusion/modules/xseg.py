@@ -9,6 +9,7 @@ import onnxruntime
 
 class XSeg:
     def __init__(self, model_path, providers):
+        
         self.session  = onnxruntime.InferenceSession(model_path, providers=providers)
         print(f'current providers: {self.session.get_providers()}') 
         print(f"available  providers: {onnxruntime.get_available_providers()}")
@@ -43,29 +44,25 @@ class XSeg:
         return output
         
 if __name__ == "__main__":
-    from .yoloface import YoloFace
-    from .occluder import Occluder
+    from deepfake.facefusion.modules.yoloface import YoloFace
+    from deepfake.facefusion.modules.occluder import Occluder
+    from deepfake.facefusion.utils.mask import overlay_mask_on_face
+    from deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark, paste_back, blend_frame
+    from deepfake.utils.video import get_video_writer
+    from deepfake.utils.timer import Timer
     from rich.progress import track
-    from ..utils.mask import overlay_mask_on_face
-    from ..utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark, paste_back, blend_frame
-    #from deep.utils import get_providers_from_device, get_video_writer
-    
+
     import imageio
-    import cv2
     import time
+    import cv2
     import os
     
 
     os.environ["ORT_LOGGING_LEVEL"] = "VERBOSE"
         
-    
-# input_path = '/Users/wadahana/Desktop/sis/faceswap/test/sq/suck2.mp4'
-# input_path = '/Users/wadahana/Desktop/sis/faceswap/test/mask/0ef45196ed648cb592f89dd89d436dec/target.jpg'
-    def test_image(yolo, xseg):
-        input_path = '/Users/wadahana/Desktop/sis/faceswap/test/mask/0ef45196ed648cb592f89dd89d436dec/target.jpg'
-        output_path = '../output_mask.png'
+    def test_image(yolo, xseg, input_path, output_path):
         image = cv2.imread(input_path)
-        face_list = yolo.detect(image=image, conf=0.7)
+        face_list = yolo.get(image=image, conf=0.5)
         face = face_list[0]
         x1, y1, x2, y2 = map(int, face[0])
         face_crop = image[y1:y2, x1:x2]
@@ -79,9 +76,8 @@ if __name__ == "__main__":
         cv2.imwrite(output_path, combined)
         
         
-    def test_video(yolo, xseg1, xseg2):
-        input_path = '/Users/wadahana/Desktop/sis/faceswap/test/sq/suck2.mp4 '
-        output_path = './suck2_mask.mp4'
+    def test_video(yolo, xseg, input_path, output_path):
+
         
         cap = cv2.VideoCapture(input_path)
         fps = cap.get(cv2.CAP_PROP_FPS)  # 获取视频帧率
@@ -90,76 +86,63 @@ if __name__ == "__main__":
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))  # 获取视频高度
         
         writer = get_video_writer(output_path, fps)
-        #while True:
-        t = 0
+
+        t = Timer()
         for i in track(range(total), description='Detecting....', transient=True):
             ret, frame = cap.read()
             if not ret:
                 break
             #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-            face_list = yolo.detect(image=frame, conf=0.7)
+            face_list = yolo.get(image=frame, conf=0.5)
             if face_list != None and len(face_list) > 0:
-                start = time.time()
+
                 face = face_list[0]
-                resized_face, affine = warp_face_by_landmark(frame, face[1], arcface_128_v2, (256,256))
+                resized_face, affine = warp_face_by_landmark(frame, face.landmark_5, arcface_128_v2, (256,256))
                 
-                x1, y1, x2, y2 = map(int, face[0])
-                # face_crop = frame[y1:y2, x1:x2]
-                # resized_face = cv2.resize(face_crop, (256, 256))
-                mask1 = xseg.detect(image=resized_face)
-                mask2 = xseg.detect(image=resized_face)
-                #output = paste_back(frame, resized_face, mask, affine)
+                t.tic()
+                mask = xseg.detect(image=resized_face)
+                t.toc()
+ 
+                mask = (mask * 255).clip(0, 255).astype(np.uint8)
+                #mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+                mask = (mask * 255).clip(0, 255).astype(np.uint8)
+                output = overlay_mask_on_face(resized_face, mask, alpha=0.5, color=(0, 0, 255))
                 
-                stop = time.time()
-                t = t + (stop - start)
-                mask1 = (mask1 * 255).clip(0, 255).astype(np.uint8)
-                mask1 = cv2.cvtColor(mask1, cv2.COLOR_GRAY2BGR)
-                mask2 = (mask2 * 255).clip(0, 255).astype(np.uint8)
-                mask2 = cv2.cvtColor(mask2, cv2.COLOR_GRAY2BGR)
-                combined = cv2.hconcat([resized_face, mask1, mask2])
+                combined = cv2.hconcat([resized_face, output])
                 
                 #output = paste_back(frame, output, mask, affine)
                 writer.append_data(combined[..., ::-1])
     
         cap.release()
         writer.close()
-        print(f'total time: {t:.4f} sec; total frames: {total}; average time per frame: {t/total:.4f} sec')
+        t.show('face occluder time')
         
-    def get_video_writer(outout_path, fps):
-        video_format = 'mp4'     # default is mp4 format
-        codec = 'libx264'        # default is libx264 encoding
-        #quality = quality        # video quality
-        pixelformat = 'yuv420p'  # video pixel format
-        image_mode = 'rbg'
-        macro_block_size = 2
-        ffmpeg_params = ['-crf', '20']
-        writer = imageio.get_writer(uri=outout_path,
-                            format=video_format,
-                            fps=fps, 
-                            codec=codec, 
-                            #quality=quality, 
-                            ffmpeg_params=ffmpeg_params, 
-                            pixelformat=pixelformat, 
-                            macro_block_size=macro_block_size)
-        return writer
         
-    providers = ['CoreMLExecutionProvider']
-    yolo_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx'
-    seg_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/dfl_xseg.onnx'
-    seg1_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/xseg_1_simplified.onnx'
-    seg1_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/xseg_1.onnx'
-    seg0_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/occluder.onnx'
+    trt_options = {
+        #"trt_fp16_enabled": True,          # 启用 FP16 加速（可选）
+        "trt_engine_cache_enable": True,     # 启用引擎缓存
+        "trt_engine_cache_path": "/data/trt_cache",  # 缓存文件存储路径
+        "trt_timing_cache_enable": True,
+        "trt_timing_cache_path": "/data/trt_cache",
+        #'trt_builder_optimization_level': 5
+        "trt_max_workspace_size": 1 << 30  # 可选：设置最大显存工作空间（单位：字节）
+    }
+    providers = [('TensorrtExecutionProvider', trt_options)]
+    # yolo_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx'
+    # seg_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/dfl_xseg.onnx'
+    # seg1_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/xseg_1_simplified.onnx'
+    # seg1_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/xseg_1.onnx'
+    # seg0_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/occluder.onnx'
     
-    yolo = YoloFace(model_path=yolo_path, providers=providers)
-    xseg = Occluder(model_path=seg0_path, providers=providers)
-    #xseg1 = XSeg(model_path=seg1_path, providers=providers)
-    test_image(yolo, xseg)
-
-    
-
-    
-
-
+    yolo_path = '/ff/.assets/models/yoloface_8n.onnx'
+    seg_path = '/ff/.assets/models/face_occluder.onnx'
+    yolo = YoloFace(model_path=yolo_path, providers=["CUDAExecutionProvider"])
+    #xseg = Occluder(model_path=seg0_path, providers=providers)
+    xseg = XSeg(model_path=seg_path, providers=[('TensorrtExecutionProvider', trt_options)])
+   
+    input_path = "/data/task/20250505/1e42b87f42559936a9447be1bce59165/target.mp4"
+    output_path = "/data/task/20250505/1e42b87f42559936a9447be1bce59165/output_mask.mp4" 
+    test_video(yolo=yolo, xseg=xseg, input_path=input_path, output_path=output_path)
     
     #providers=['CPUExecutionProvider', 'CoreMLExecutionProvider', 'CUDAExecutionProvider']
    

@@ -7,3 +7,4 @@ from deepfake.facefusion.modules.face_analysis_diy import FaceAnalysisDIY
 
 
 
+def test_image()

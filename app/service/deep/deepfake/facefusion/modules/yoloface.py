@@ -3,6 +3,7 @@ import cv2
 import onnx
 import onnxruntime
 import numpy as np
+
 from collections import namedtuple
 from typing import List
 from deepfake.utils.face import Face, sort_by_order, FaceAnalyserOrder
@@ -128,76 +129,87 @@ class YoloFace:
 if __name__ == "__main__":
     from deepfake.utils.face import draw_landmarks
     from deepfake.utils.video import get_video_writer
+    from deepfake.utils.timer import Timer
     from rich.progress import track
     
-    def test_image(detector, input_path, output_path):
+    def test_image(detector, conf, input_path, output_path):
         #input = '/Users/wadahana/Desktop/ad_enhance-d77b92ad.png'
         #input = "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task/20250405/ec6ee635b4742b08e0fdea6c03769514/source.jpg"
         
         image = cv2.imread(input_path)
-        face_list = detector.get(image=image, conf=0.5, order='best-worst')
-        face = face_list[0]
-        res = [512, 512]
-
-        image = draw_landmarks(image, face.landmarks)
-
-        x1, y1, x2, y2 = map(int, face.bbox)
-        face_crop = image[y1:y2, x1:x2]
-        cv2.rectangle(image, (x1,y1), (x2,y2), (255, 0, 0), 1)
-        resized_face = cv2.resize(face_crop, (512, 512))
+        t = Timer()
+        t.tic()
+        face_list = detector.get(image=image, conf=conf, order='best-worst')
+        t.toc()
+        for face in face_list:
+            image = draw_landmarks(image, face.landmark_5)
+            color = (200,10,200)
+            x1, y1, x2, y2 = map(int, face.bbox)
+            cv2.rectangle(image, (x1,y1), (x2,y2), color, 1)
+            cv2.putText(image, f'{face.score:.4f}', (x1,y1+10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+        
+        #face_crop = image[y1:y2, x1:x2]
+        #resized_face = cv2.resize(face_crop, (512, 512))
         
         cv2.imwrite(output_path, image)
-       
+        t.show('yolo face detect photo')
         
 
 
-    def test_video(detector):
-        from facefusion.utils.affine import warp_face_by_landmark, paste_back
-        #video_input = '../assets/dzq.mp4'
+    def test_video(detector, conf, input_path, output_path):
         
-        video_input = '/Users/wadahana/Desktop/sis/faceswap/test/sq/suck2/suck2-short.mp4'
-        cap = cv2.VideoCapture(video_input)
+        cap = cv2.VideoCapture(input_path)
         fps = cap.get(cv2.CAP_PROP_FPS)  # 获取视频帧率
         total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))  # 获取视频宽度
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))  # 获取视频高度
+        t = Timer()
+
+        color = (200,10,200)
+        writer = get_video_writer(output_path=output_path, fps=fps)
         
-        frames = []
-        #while True:
         for i in track(range(total), description='Detecting....', transient=True):
             ret, frame = cap.read()
             if not ret:
                 break
-            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-            face_list = detector.detect(image=frame, conf=0.7)
-            if len(face_list) == 0:
-                continue
-            face = face_list[0]
-            frame = draw_landmarks(frame, face[1])
-            x1, y1, x2, y2 = map(int, face[0])
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2) 
+            t.tic()
+            face_list = detector.get(image=frame, conf=conf)
+            t.toc()
 
+            for face in face_list:
+                frame = draw_landmarks(frame, face.landmark_5)
+                x1, y1, x2, y2 = map(int, face.bbox)
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2) 
+                cv2.putText(frame, f'{face.score:.4f}', (x2,y2), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
             #(x1, y1, x2, y2) = adjust_bounding_box(bbox=face.bounding_box, width=width, height=height, dsize=512)
-            face_crop = frame[y1:y2, x1:x2]
-            resized_face = cv2.resize(face_crop, (512, 512))
-            #frames.append(resized_face)
-            #out.write(resized_face)
-            
-            frames.append(frame)
+            #face_crop = frame[y1:y2, x1:x2]
+            #resized_face = cv2.resize(face_crop, (512, 512))
+            writer.append_data(frame[..., ::-1])
     
-        #images2video(frames, wfp='../output_yoloface.mp4', fps=fps)
+        writer.close
         cap.release()
+        t.show('yolo face detect video')
 
 
 
-    #model_path = '../../../models/facefusion/yoloface_8n.onnx'
-    model_path = "/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx"
+    model_path = '/home/eric/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx'
+    #model_path = "/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx"
     providers=['CPUExecutionProvider', 'CoreMLExecutionProvider', 'CUDAExecutionProvider']
    
     yolo = YoloFace(model_path=model_path, providers=providers)
-    input_path = "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task/20250405/ec6ee635b4742b08e0fdea6c03769514/source.jpg"
-    output_path = "/Users/wadahana/Desktop/output_face.jpg"    
-        
-    test_image(yolo, input_path, output_path)
+    #input_path = "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task/20250405/ec6ee635b4742b08e0fdea6c03769514/source.jpg"
+    #output_path = "/Users/wadahana/Desktop/output_face.jpg"    
+    # input_path = "/home/eric/workspace/AI/sd/temp/mask/2b4194098d22b327b28893378e8a6c99/target.jpg"
+    # output_path = "/home/eric/workspace/AI/sd/temp/mask/2b4194098d22b327b28893378e8a6c99/output_face2.jpg"   
+    # test_image(yolo, 0.4, input_path, output_path)
+    
+    input_path = "/home/eric/workspace/AI/sd/temp/mask/53dd886693270e1811a465740f7a266a/target.mp4"
+    output_path = "/home/eric/workspace/AI/sd/temp/mask/53dd886693270e1811a465740f7a266a/output_face2.mp4" 
+    test_video(yolo, 0.4, input_path, output_path)
+    
+    
+    input_path = "/home/eric/workspace/AI/sd/temp/mask/87f97cd804122945562134319fa5d6ea/target.mp4"
+    output_path = "/home/eric/workspace/AI/sd/temp/mask/87f97cd804122945562134319fa5d6ea/output_face2.mp4" 
+    test_video(yolo, 0.4, input_path, output_path)
     
     print('test yoloface_onnx finished! ')

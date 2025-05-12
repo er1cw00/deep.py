@@ -1,5 +1,5 @@
 import imageio
-import ffmpeg
+
 
 
 def get_video_writer(output_path, fps):

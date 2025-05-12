@@ -63,7 +63,7 @@ def test_video(yolo, xseg1, xseg2, input_path, output_path):
         if not ret:
             break
         #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        face_list = yolo.detect(image=frame, conf=0.7)
+        face_list = yolo.get(image=frame, conf=0.7)
         if face_list != None and len(face_list) > 0:
             face = face_list[0]
             resized_face, affine = warp_face_by_landmark(frame, face[1], arcface_128_v2, (256,256))

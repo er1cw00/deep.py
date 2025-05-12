@@ -4,13 +4,6 @@ from typing import List, Literal
 
 FaceAnalyserOrder = Literal['left-right', 'right-left', 'top-bottom', 'bottom-top', 'small-large', 'large-small', 'best-worst', 'worst-best']
 
-# Face = namedtuple('Face',
-# [
-# 	'bbox',
-# 	'landmarks',
-# 	'score',
-# ])
-
 import numpy as np
 from numpy.linalg import norm as l2norm
 #from easydict import EasyDict
@@ -63,6 +56,17 @@ class Face(dict):
         if self.gender is None:
             return None
         return 'M' if self.gender==1 else 'F'
+
+def convert_face_landmark_68_to_5(landmark_68):
+	landmark_5 = np.array(
+	[
+		np.mean(landmark_68[36:42], axis = 0),
+		np.mean(landmark_68[42:48], axis = 0),
+		landmark_68[30],
+		landmark_68[48],
+		landmark_68[54]
+	])
+	return landmark_5
 
 def expand_bbox(bbox, width, height, dsize=512):
 	x1, y1, x2, y2 = map(int, bbox)
