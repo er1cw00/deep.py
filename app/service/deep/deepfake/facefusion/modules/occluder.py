@@ -32,6 +32,9 @@ class Occluder:
         mask = output.transpose(1, 2, 0).clip(0, 1).astype(np.float32)
         mask = cv2.resize(mask, (width, height))
         mask = (cv2.GaussianBlur(mask.clip(0, 1), (0, 0), 5).clip(0.5, 1) - 0.5) * 2
+#        kernel = np.ones((3,3), np.uint8)
+#        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+#        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
         return mask
     
     def detect(self, image):
