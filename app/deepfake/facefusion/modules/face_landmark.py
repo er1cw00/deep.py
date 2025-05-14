@@ -14,11 +14,10 @@ class FaceLandmark_2dFan:
         self.session  = onnxruntime.InferenceSession(model_path, providers=providers)
         inputs = self.session.get_inputs()
         for input in inputs:
-            print(f'input name: {input.name}, shape: {input.shape}')
+            #print(f'input name: {input.name}, shape: {input.shape}')
             if input.name == 'input':
                 self.input_name = input.name
-                self.input_size = (inputs[0].shape[2], inputs[0].shape[3]) #CHW
-        self.affine = False
+                self.input_size = (input.shape[2], input.shape[3]) #CHW (3,256,256)
 
     def pre_process(self, image, bbox):
         scale = 195 / np.subtract(bbox[2:], bbox[:2]).max()
