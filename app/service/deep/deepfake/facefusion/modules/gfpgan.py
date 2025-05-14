@@ -46,14 +46,14 @@ class GFPGAN:
 
 if __name__ == "__main__":
     from .yoloface import YoloFace
-    from facefusion.utils.affine import ffhq_512, warp_face_by_landmark, paste_back, blend_frame
+    from facefusion.utils.affine import ffhq_512, warp_face_by_landmark_5, paste_back, blend_frame
     from facefusion.utils.mask import create_bbox_mask
     
     def restore_face(yolo, gfpgan, image):
         face_list = yolo.detect(image=image, conf=0.7)
         #print(f'restore_face >> total of face: {len(face_list)}')
         for index, face in enumerate(face_list):
-            cropped, affine_matrix = warp_face_by_landmark(image, face[1], ffhq_512, gfpgan.input_size)
+            cropped, affine_matrix = warp_face_by_landmark_5(image, face[1], ffhq_512, gfpgan.input_size)
             box_mask = create_bbox_mask(gfpgan.input_size, 0.3, (0,0,0,0))
             crop_mask = np.minimum.reduce([box_mask]).clip(0, 1)
             result = gfpgan.run(cropped)

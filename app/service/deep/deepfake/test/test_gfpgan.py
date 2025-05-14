@@ -8,7 +8,7 @@ from deepfake.facefusion.modules.yoloface import YoloFace
 from deepfake.facefusion.modules.occluder import Occluder
 from deepfake.facefusion.modules.gfpgan import GFPGAN
 from deepfake.facefusion.utils.mask import overlay_mask_on_face, create_bbox_mask
-from deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark, paste_back, blend_frame
+from deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark_5, paste_back, blend_frame
 from deepfake.utils.timer import Timer
 from deepfake.utils.video import get_video_writer
 from .file import get_test_files
@@ -27,7 +27,7 @@ def test_image(yolo, gfpgan, input_path, output_path):
     
     if face_list != None and len(face_list) > 0:
         face = face_list[0]
-        face_image, affine = warp_face_by_landmark(image, face.landmark_5, ffhq_512, gfpgan.input_size)
+        face_image, affine = warp_face_by_landmark_5(image, face.landmark_5, ffhq_512, gfpgan.input_size)
         box_mask = create_bbox_mask(face_image.shape[:2][::-1], 0.3, (0,0,0,0))
         crop_mask = np.minimum.reduce([box_mask]).clip(0, 1)
         
@@ -69,7 +69,7 @@ def test_video(yolo, gfpgan, input_path, output_path):
         
         if face_list != None and len(face_list) > 0:
             face = face_list[0]
-            face_image, affine = warp_face_by_landmark(frame, face.landmark_5, ffhq_512, gfpgan.input_size)
+            face_image, affine = warp_face_by_landmark_5(frame, face.landmark_5, ffhq_512, gfpgan.input_size)
             box_mask = create_bbox_mask(face_image.shape[:2][::-1], 0.3, (0,0,0,0))
             crop_mask = np.minimum.reduce([box_mask]).clip(0, 1)
             

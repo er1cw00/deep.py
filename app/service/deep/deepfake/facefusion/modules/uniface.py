@@ -80,7 +80,7 @@ class UniFace:
 
 if __name__ == "__main__":
     from live_portrait.utils.video import images2video
-    from facefusion.utils.affine import ffhq_512, arcface_128_v2, warp_face_by_landmark, paste_back, blend_frame
+    from facefusion.utils.affine import ffhq_512, arcface_128_v2, warp_face_by_landmark_5, paste_back, blend_frame
     from facefusion.utils.mask import create_bbox_mask
     from rich.progress import track
     from .yoloface import YoloFace
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     def crop_face(image, yolo, templete, dsize):
         face_list = yolo.detect(image=image, conf=0.7)
         face = face_list[0]
-        cropped, affine_matrix = warp_face_by_landmark(image, face[1], templete, dsize)
+        cropped, affine_matrix = warp_face_by_landmark_5(image, face[1], templete, dsize)
         
         return cropped, affine_matrix
     

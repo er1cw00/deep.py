@@ -8,7 +8,7 @@ from deepfake.facefusion.modules.yoloface import YoloFace
 from deepfake.facefusion.modules.occluder import Occluder
 from deepfake.facefusion.modules.xseg import XSeg
 from deepfake.facefusion.utils.mask import overlay_mask_on_face
-from deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark, paste_back, blend_frame
+from deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark_5, paste_back, blend_frame
 from deepfake.utils.timer import Timer
 from deepfake.utils.video import get_video_writer
 from .file import get_test_files
@@ -66,7 +66,7 @@ def test_video(yolo, xseg1, xseg2, input_path, output_path):
         face_list = yolo.get(image=frame, conf=0.7)
         if face_list != None and len(face_list) > 0:
             face = face_list[0]
-            resized_face, affine = warp_face_by_landmark(frame, face[1], arcface_128_v2, (256,256))
+            resized_face, affine = warp_face_by_landmark_5(frame, face[1], arcface_128_v2, (256,256))
             
             x1, y1, x2, y2 = map(int, face[0])
             # face_crop = frame[y1:y2, x1:x2]

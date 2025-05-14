@@ -55,10 +55,8 @@ if __name__ == "__main__":
     from .occluder import Occluder
     from rich.progress import track
     from deepfake.facefusion.utils.mask import overlay_mask_on_face
-#    from deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, #warp_face_by_landmark, paste_back, blend_frame
     from deepfake.utils.face import draw_landmarks, convert_face_landmark_68_to_5
     from deepfake.utils.timer import Timer
-    #from deep.utils import get_providers_from_device, get_video_writer
     import imageio
     import cv2
     import time

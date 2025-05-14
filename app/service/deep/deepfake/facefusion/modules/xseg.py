@@ -47,7 +47,7 @@ if __name__ == "__main__":
     from deepfake.facefusion.modules.yoloface import YoloFace
     from deepfake.facefusion.modules.occluder import Occluder
     from deepfake.facefusion.utils.mask import overlay_mask_on_face
-    from deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark, paste_back, blend_frame
+    from deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark_5, paste_back, blend_frame
     from deepfake.utils.video import get_video_writer
     from deepfake.utils.timer import Timer
     from rich.progress import track
@@ -100,7 +100,7 @@ if __name__ == "__main__":
             if face_list != None and len(face_list) > 0:
 
                 face = face_list[0]
-                resized_face, affine = warp_face_by_landmark(frame, face.landmark_5, arcface_128_v2, (256,256))
+                resized_face, affine = warp_face_by_landmark_5(frame, face.landmark_5, arcface_128_v2, (256,256))
                 
                 t.tic()
                 mask = xseg.detect(image=resized_face)

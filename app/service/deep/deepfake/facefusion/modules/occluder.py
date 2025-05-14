@@ -51,7 +51,7 @@ if __name__ == "__main__":
     from .occluder import Occluder
     from rich.progress import track
     from ..utils.mask import overlay_mask_on_face
-    from ..utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark, paste_back, blend_frame
+    from ..utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark_5, paste_back, blend_frame
     #from deep.utils import get_providers_from_device, get_video_writer
     
     import imageio
@@ -105,7 +105,7 @@ if __name__ == "__main__":
             if face_list != None and len(face_list) > 0:
                 start = time.time()
                 face = face_list[0]
-                resized_face, affine = warp_face_by_landmark(frame, face[1], arcface_128_v2, (256,256))
+                resized_face, affine = warp_face_by_landmark_5(frame, face[1], arcface_128_v2, (256,256))
                 
                 x1, y1, x2, y2 = map(int, face[0])
                 # face_crop = frame[y1:y2, x1:x2]

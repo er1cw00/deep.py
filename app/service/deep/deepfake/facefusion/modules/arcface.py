@@ -6,7 +6,7 @@ import argparse
 import cv2
 import numpy as np
 import onnxruntime
-from facefusion.utils.affine import arcface_112_v2, warp_face_by_landmark
+from facefusion.utils.affine import arcface_112_v2, warp_face_by_landmark_5
 
 class ArcFaceW600k:
     def __init__(self, model_path, providers):
@@ -28,7 +28,7 @@ class ArcFaceW600k:
         return (embedding, normed_embedding)
     
     def embedding(self, image, landmarks):
-        image, _ = warp_face_by_landmark(image, landmarks, arcface_112_v2, self.input_size)
+        image, _ = warp_face_by_landmark_5(image, landmarks, arcface_112_v2, self.input_size)
         img = self.pre_process(image)
         #t = timeit.default_timer()
         result = self.session.run(None, {self.input_name: img})

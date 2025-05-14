@@ -7,7 +7,7 @@ from .modules.uniface import UniFace
 from .modules.arcface import ArcFaceW600k
 from .modules.gfpgan import GFPGAN
 from .modules.yoloface import YoloFace
-from .utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark, paste_back, blend_frame
+from .utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark_5, paste_back, blend_frame
 from .facemask import FaceMasker
 from deepfake.utils import Printable
 
@@ -62,8 +62,8 @@ class FaceSwapper(object):
         return output
     
     def swap_uniface(self, source, source_crop_info, target, target_crop_info):
-        source_face, _ = warp_face_by_landmark(source, source_crop_info[1], ffhq_512, self.uniface.source_size)
-        target_face, affine = warp_face_by_landmark(target, target_crop_info[1], ffhq_512, self.uniface.target_size)
+        source_face, _ = warp_face_by_landmark_5(source, source_crop_info[1], ffhq_512, self.uniface.source_size)
+        target_face, affine = warp_face_by_landmark_5(target, target_crop_info[1], ffhq_512, self.uniface.target_size)
         
         crop_mask = self.masker.create_mask(target_face)
         output = self.uniface.swap(source_face, target_face)        
@@ -80,7 +80,7 @@ class FaceSwapper(object):
     
     def swap_inswapper(self, source, source_crop_info, target, target_crop_info):
         embedding = self.recognizer.embedding(image=source, landmarks=source_crop_info[1])
-        target_face, affine = warp_face_by_landmark(target, target_crop_info[1], arcface_128_v2, self.config.dsize)
+        target_face, affine = warp_face_by_landmark_5(target, target_crop_info[1], arcface_128_v2, self.config.dsize)
         
         crop_mask = self.masker.create_mask(target_face)
         output = self.inswapper.swap(embedding[0], target_face)
