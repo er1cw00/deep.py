@@ -23,12 +23,16 @@ arcface_128_v2 = np.array([
     [ 0.61507734, 0.72034453 ]
 ])
 
-def warp_face_by_landmark(image , face_landmark_5, warp_template, crop_size):
+def warp_face_by_face_landmark_5(image , face_landmark_5, warp_template, crop_size):
 	normed_warp_template = warp_template * crop_size
 	affine_matrix = cv2.estimateAffinePartial2D(face_landmark_5, normed_warp_template, method = cv2.RANSAC, ransacReprojThreshold = 100)[0]
 	cropped = cv2.warpAffine(image, affine_matrix, crop_size, borderMode = cv2.BORDER_REPLICATE, flags = cv2.INTER_AREA)
 	return cropped, affine_matrix
 
+def warp_face_by_translation(temp_vision_frame, translation , scale, crop_size ):
+	affine_matrix = np.array([ [ scale, 0, translation[0] ], [ 0, scale, translation[1] ] ])
+	cropped = cv2.warpAffine(temp_vision_frame, affine_matrix, crop_size)
+	return cropped, affine_matrix
 
 def paste_back(image, cropped, crop_mask, affine_matrix):
     inverse_matrix = cv2.invertAffineTransform(affine_matrix)

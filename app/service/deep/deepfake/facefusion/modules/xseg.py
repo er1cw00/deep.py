@@ -64,9 +64,12 @@ if __name__ == "__main__":
         image = cv2.imread(input_path)
         face_list = yolo.get(image=image, conf=0.5)
         face = face_list[0]
+       
+            
         x1, y1, x2, y2 = map(int, face[0])
         face_crop = image[y1:y2, x1:x2]
         resized_face = cv2.resize(face_crop, (256, 256))
+            
         mask = xseg.detect(image=resized_face)
         mask = (mask * 255).clip(0, 255).astype(np.uint8)
 

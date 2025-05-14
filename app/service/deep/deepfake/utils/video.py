@@ -1,7 +1,6 @@
 import imageio
 
 
-
 def get_video_writer(output_path, fps):
     video_format = 'mp4'     # default is mp4 format
     codec = 'libx265'        # default is libx264 encoding

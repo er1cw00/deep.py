@@ -4,7 +4,7 @@ import numpy as np
 from rich.progress import track
 from deepfake.utils.face import draw_landmarks
 from deepfake.facefusion.modules.yoloface import YoloFace
-from deepfake.facefusion.modules.face_analysis_diy import FaceAnalysisDIY
+from deepfake.facefusion.modules.retinaface import RetinaFace
 from deepfake.utils.face import expand_bbox
 from deepfake.utils.timer import Timer
 from deepfake.utils.video import get_video_writer
@@ -58,7 +58,7 @@ def test_image(det1, det2, input_path, output_path):
     combined = cv2.hconcat([image, output1, output2])
     cv2.imwrite(output_path, combined)
     t1.show('yoloface')
-    t2.show('insightface')
+    t2.show('retinaface')
         
 def test_video(det1, det2, input_path, output_path):
     t1 = Timer()
@@ -110,21 +110,20 @@ def test_video(det1, det2, input_path, output_path):
     writer.close()
     
     t1.show('yoloface')
-    t2.show('insightface')
+    t2.show('retinaface')
     
-insightface_path = '/home/eric/workspace/AI/sd/ComfyUI/models/insightface'
-#insightface_path = "/Users/wadahana/workspace/AI/sd/ComfyUI/models/insightface"
-providers=['CUDAExecutionProvider', 'CPUExecutionProvider', 'CoreMLExecutionProvider']
+retinaface_path = '/home/eric/workspace/AI/sd/ComfyUI/facefusion/retinaface_10g.onnx'
+#retinaface_path = "/Users/wadahana/workspace/AI/sd/ComfyUI/models/insightface"
+
 
 yolo_path = '/home/eric/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx'
 #yolo_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx'
+
 providers=['CUDAExecutionProvider', 'CPUExecutionProvider', 'CoreMLExecutionProvider']
 
-yolo = YoloFace(model_path=yolo_path, providers=providers)
+yoloface = YoloFace(yolo_path=yolo_path, providers=providers, threshold=0.5)
+retinaface = RetinaFace(retinaface_path=yolo_path, providers=providers, threshold=0.5)
 
-insight = FaceAnalysisDIY(name="buffalo_l", root=insightface_path, providers=providers)
-insight.prepare(ctx_id=0, det_size=(512, 512), det_thresh=0.5)
-insight.warmup()
 
 # input_path = "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task/20250405/ec6ee635b4742b08e0fdea6c03769514/source.jpg"
 # output_path = "/Users/wadahana/Desktop/output_face.jpg"    
@@ -141,13 +140,13 @@ for path in photo_list:
     input_path = os.path.join(path, 'target.jpg')
     output_path = os.path.join(path, 'output_face.png')
     print(path)
-    test_image(yolo, insight, input_path, output_path)
+    test_image(yoloface, retinaface, input_path, output_path)
 
 print("\nVideo directories:")
 for path in video_list:
     input_path = os.path.join(path, 'target.mp4')
     output_path = os.path.join(path, 'output_face.mp4')
     print(path)
-    test_video(yolo, insight, input_path, output_path)
+    test_video(yoloface, retinaface, input_path, output_path)
     
 print('test face detect finished! ')
