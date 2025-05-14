@@ -1,17 +1,19 @@
 import os
 import cv2
+import time
 import numpy as np
 from rich.progress import track
-from deepfake.utils.face import draw_landmarks
+from deepfake.utils.face import draw_landmarks, convert_face_landmark_68_to_5
 from deepfake.facefusion.modules.yoloface import YoloFace
 from deepfake.facefusion.modules.retinaface import RetinaFace
-from deepfake.utils.face import expand_bbox
+from deepfake.facefusion.modules.face_landmark import FaceLandmark_2dFan
+# from deepfake.utils.face import expand_bbox
 from deepfake.utils.timer import Timer
 from deepfake.utils.video import get_video_writer
 from .file import get_test_files
     
 def get_one_face(det, image):
-    face_list = det.get(image=image, conf=0.5, order='best-worst')
+    face_list = det.get(image=image, order='best-worst')
     if face_list != None and len(face_list) > 0:
         return face_list[0]
     return None
@@ -24,10 +26,11 @@ def get_one_face(det, image):
 #     resized_face = cv2.resize(face_cropped, (512, 512))
 #     return resized_face
     
-def test_image(det1, det2, input_path, output_path):
+def test_image(det1, det2, landmark, input_path, output_path):
     t1 = Timer()
     t2 = Timer()
-
+    t3 = Timer()
+    
     image = cv2.imread(input_path)
     t1.tic()
     face1 = get_one_face(det1, image)
@@ -38,20 +41,32 @@ def test_image(det1, det2, input_path, output_path):
     t2.toc()
     
     color = (0, 0, 200)
-    
+    color2 = (200,10,100)
     if face1 != None:
-        output1 = draw_landmarks(image.copy(), face1.landmark_5)
+        t3.tic()
+        face_landmark_68, face_landmark_68_score = landmark.get(image, face1.bbox)
+        t3.toc()
+        landmark_68_5 = convert_face_landmark_68_to_5(face_landmark_68)
+        output1 = draw_landmarks(image.copy(), face1.landmark_5, color=color)
+        output1 = draw_landmarks(output1, landmark_68_5, color=color2)
         x1, y1, x2, y2 = map(int, face1.bbox)
         cv2.rectangle(output1, (x1,y1), (x2,y2), color, 2)
         cv2.putText(output1, f'{face1.score:.4f}', (x1,y1), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+        cv2.putText(output1, f'{face_landmark_68_score:.4f}', (x1,y2), cv2.FONT_HERSHEY_SIMPLEX, 0.6,color2, 2)
     else:
         output1 = np.zeros_like(image)
         
     if face2 != None:
-        output2 = draw_landmarks(image.copy(), face2.landmark_5)  
+        t3.tic()
+        face_landmark_68, face_landmark_68_score = landmark.get(image, face2.bbox)
+        t3.toc()
+        landmark_68_5 = convert_face_landmark_68_to_5(face_landmark_68)
+        output2 = draw_landmarks(image.copy(), face2.landmark_5, color=color)  
+        output2 = draw_landmarks(output2, landmark_68_5, color=color2)
         x1, y1, x2, y2 = map(int, face2.bbox)
         cv2.rectangle(output2, (x1,y1), (x2,y2), color, 2)
         cv2.putText(output2, f'{face2.score:.4f}', (x1,y1), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+        cv2.putText(output2, f'{face_landmark_68_score:.4f}', (x1,y2), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color2, 2)
     else:
         output2 = np.zeros_like(image)
         
@@ -59,11 +74,12 @@ def test_image(det1, det2, input_path, output_path):
     cv2.imwrite(output_path, combined)
     t1.show('yoloface')
     t2.show('retinaface')
+    t3.show('landmark')
         
-def test_video(det1, det2, input_path, output_path):
+def test_video(det1, det2, landmark, input_path, output_path):
     t1 = Timer()
     t2 = Timer()
-
+    t3 = Timer()
     cap = cv2.VideoCapture(input_path)
     fps = cap.get(cv2.CAP_PROP_FPS)  # 获取视频帧率
     total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -86,23 +102,35 @@ def test_video(det1, det2, input_path, output_path):
         face2 = get_one_face(det2, frame)
         t2.toc()
         
-        color = (10,200,10)
+        color = (0, 0, 200)
+        color2 = (200,10,100)
         if face1 == None:
             output1 = np.zeros_like(frame)
         else:
+            t3.tic()
+            face_landmark_68, face_landmark_68_score = landmark.get(frame, face1.bbox)
+            t3.toc()
+            landmark_68_5 = convert_face_landmark_68_to_5(face_landmark_68)
             output1 = draw_landmarks(frame.copy(), face1.landmark_5)
+            output1 = draw_landmarks(output1, landmark_68_5, color=color2)
             x1, y1, x2, y2 = map(int, face1.bbox)
             cv2.rectangle(output1, (x1,y1), (x2,y2), color, 2)
             cv2.putText(output1, f'{face1.score:.4f}', (x1,y1), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
-         
+            cv2.putText(output1, f'{face_landmark_68_score:.4f}', (x1,y1), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color2, 2)
         if face2 == None:
             output2 = np.zeros_like(frame)
         else:
+            t3.tic()
+            face_landmark_68, face_landmark_68_score = landmark.get(frame, face2.bbox)
+            t3.toc()
+            landmark_68_5 = convert_face_landmark_68_to_5(face_landmark_68)
             output2 = draw_landmarks(frame.copy(), face2.landmark_5)
+            output2 = draw_landmarks(output2, landmark_68_5, color=color2)
             x1, y1, x2, y2 = map(int, face2.bbox)
             cv2.rectangle(output2, (x1,y1), (x2,y2), color, 2)
             cv2.putText(output2, f'{face2.score:.4f}', (x1,y1), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
-                       
+            cv2.putText(output2, f'{face_landmark_68_score:.4f}', (x1,y2), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color2, 2)
+            
             combined = cv2.hconcat([frame, output1, output2])
             writer.append_data(combined[..., ::-1])
 
@@ -111,18 +139,23 @@ def test_video(det1, det2, input_path, output_path):
     
     t1.show('yoloface')
     t2.show('retinaface')
+    t3.show('landmark')
     
-retinaface_path = '/home/eric/workspace/AI/sd/ComfyUI/facefusion/retinaface_10g.onnx'
+retinaface_path = '/home/eric/workspace/AI/sd/ComfyUI/models/facefusion/retinaface_10g.onnx'
 #retinaface_path = "/Users/wadahana/workspace/AI/sd/ComfyUI/models/insightface"
 
 
 yolo_path = '/home/eric/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx'
 #yolo_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx'
 
+landmark_path = '/home/eric/workspace/AI/sd/ComfyUI/models/facefusion/2dfan4.onnx'
+#landmark_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/2dfan4.onnx'
+
 providers=['CUDAExecutionProvider', 'CPUExecutionProvider', 'CoreMLExecutionProvider']
 
-yoloface = YoloFace(yolo_path=yolo_path, providers=providers, threshold=0.5)
-retinaface = RetinaFace(retinaface_path=yolo_path, providers=providers, threshold=0.5)
+yoloface = YoloFace(model_path=yolo_path, providers=providers, threshold=0.5)
+retinaface = RetinaFace(model_path=retinaface_path, providers=providers, threshold=0.5)
+landmark = FaceLandmark_2dFan(model_path=landmark_path, providers=providers)
 
 
 # input_path = "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task/20250405/ec6ee635b4742b08e0fdea6c03769514/source.jpg"
@@ -138,15 +171,18 @@ photo_list, video_list = get_test_files()
 print("Photo directories:")
 for path in photo_list:
     input_path = os.path.join(path, 'target.jpg')
-    output_path = os.path.join(path, 'output_face.png')
+    output_path = os.path.join(path, 'target_face.jpg')
     print(path)
-    test_image(yoloface, retinaface, input_path, output_path)
+    test_image(yoloface, retinaface, landmark, input_path, output_path)
+    test_image(yoloface, retinaface, landmark, os.path.join(path, 'source.jpg'), os.path.join(path, 'source_face.jpg'))
 
 print("\nVideo directories:")
 for path in video_list:
     input_path = os.path.join(path, 'target.mp4')
-    output_path = os.path.join(path, 'output_face.mp4')
+    output_path = os.path.join(path, 'target_face.mp4')
     print(path)
-    test_video(yoloface, retinaface, input_path, output_path)
+    test_video(yoloface, retinaface, landmark, input_path, output_path)
+    test_image(yoloface, retinaface, landmark, os.path.join(path, 'source.jpg'), os.path.join(path, 'source_face.jpg'))
+    time.sleep(10)
     
 print('test face detect finished! ')
