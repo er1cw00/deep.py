@@ -7,10 +7,11 @@ parameters used for crop faces
 import os
 from dataclasses import dataclass
 from typing import Tuple
-from liveportrait.config.base_config import PrintableConfig, liveportrait_path, models_path
+from deepfake.live_portrait.config.base_config import liveportrait_path, models_path
+from deepfake.utils import Printable
 
-@dataclass(repr=False)  # use repr from PrintableConfig
-class CropConfig(PrintableConfig):
+@dataclass(repr=False)  # use repr from Printable
+class CropConfig(Printable):
     insightface_root: str = os.path.abspath(os.path.join(models_path, 'insightface'))
     landmark_ckpt_path: str = os.path.abspath(os.path.join(models_path, 'liveportrait/landmark.onnx'))
     xpose_config_file_path: str = os.path.abspath(os.path.join(liveportrait_path, "modules/XPose/config_model/UniPose_SwinT.py"))

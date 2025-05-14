@@ -19,16 +19,16 @@ import os.path as osp
 from rich.progress import track
 
 
-from liveportrait.config.inference_config import InferenceConfig
-from liveportrait.config.crop_config import CropConfig
-from liveportrait.utils.camera import get_rotation_matrix
-from liveportrait.utils.video import images2video#, concat_frames, get_fps, add_audio_to_video, has_audio_stream, video2gif
-from liveportrait.utils.crop import _transform_img, prepare_paste_back, paste_back
-from liveportrait.utils.io import load_image_rgb, load_video, resize_to_limit, dump, load
-from liveportrait.utils.helper import basename, dct2device, is_video, is_template, remove_suffix, is_image, calc_motion_multiplier
+from live_portrait.config.inference_config import InferenceConfig
+from live_portrait.config.crop_config import CropConfig
+from live_portrait.utils.camera import get_rotation_matrix
+from live_portrait.utils.video import images2video#, concat_frames, get_fps, add_audio_to_video, has_audio_stream, video2gif
+from live_portrait.utils.crop import _transform_img, prepare_paste_back, paste_back
+from live_portrait.utils.io import load_image_rgb, load_video, resize_to_limit, dump, load
+from live_portrait.utils.helper import basename, dct2device, is_video, is_template, remove_suffix, is_image, calc_motion_multiplier
 
 # from .utils.viz import viz_lmk
-from liveportrait.wrapper import AnimalWrapper
+from live_portrait.wrapper import AnimalWrapper
 
 
 class AnimalPipeline(object):
@@ -169,7 +169,7 @@ class AnimalPipeline(object):
         
 
 if __name__ == '__main__':
-    from liveportrait.animal_cropper import AnimalCropper
+    from live_portrait.animal_cropper import AnimalCropper
     image_input = "../assets/cat.jpg"
     #image_input = "./assets/liuyifei.jpeg"
     video_input = '../assets/liveportrait.mp4'

@@ -5,8 +5,9 @@ import numpy as np
 import onnxruntime
 from PIL import Image
 from torchvision.ops import nms
-from liveportrait.utils.timer import Timer
-from liveportrait.utils.crop import crop_image, _transform_pts
+
+from deepfake.utils.timer import Timer
+from deepfake.live_portrait.utils.crop import crop_image, _transform_pts
 
 def to_ndarray(obj):
     if isinstance(obj, torch.Tensor):

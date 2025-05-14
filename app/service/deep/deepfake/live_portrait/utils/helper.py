@@ -8,11 +8,11 @@ import numpy as np
 from scipy.spatial import ConvexHull # pylint: disable=E0401,E0611
 from typing import Union
 
-from liveportrait.modules.spade_generator import SPADEDecoder
-from liveportrait.modules.warping_network import WarpingNetwork
-from liveportrait.modules.motion_extractor import MotionExtractor
-from liveportrait.modules.appearance_feature_extractor import AppearanceFeatureExtractor
-from liveportrait.modules.stitching_retargeting_network import StitchingRetargetingNetwork
+from live_portrait.modules.spade_generator import SPADEDecoder
+from live_portrait.modules.warping_network import WarpingNetwork
+from live_portrait.modules.motion_extractor import MotionExtractor
+from live_portrait.modules.appearance_feature_extractor import AppearanceFeatureExtractor
+from live_portrait.modules.stitching_retargeting_network import StitchingRetargetingNetwork
 
 
 def tensor_to_numpy(data: Union[np.ndarray, torch.Tensor]) -> np.ndarray:

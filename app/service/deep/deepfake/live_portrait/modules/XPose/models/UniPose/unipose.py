@@ -13,8 +13,8 @@ import torch.nn.functional as F
 from torch import nn
 from typing import List
 
-from liveportrait.modules.XPose.util.keypoint_ops import keypoint_xyzxyz_to_xyxyzz
-from liveportrait.modules.XPose.util.misc import NestedTensor, nested_tensor_from_tensor_list,inverse_sigmoid
+from live_portrait.modules.XPose.util.keypoint_ops import keypoint_xyzxyz_to_xyxyzz
+from live_portrait.modules.XPose.util.misc import NestedTensor, nested_tensor_from_tensor_list,inverse_sigmoid
 
 from .utils import MLP
 from .backbone import build_backbone

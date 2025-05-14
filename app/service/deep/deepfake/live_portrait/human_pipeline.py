@@ -14,15 +14,15 @@ from rich.progress import track
 #from .config.argument_config import ArgumentConfig
 from .config.inference_config import InferenceConfig
 from .config.crop_config import CropConfig
-from liveportrait.utils.camera import get_rotation_matrix
-from liveportrait.utils.video import images2video ## concat_frames, get_fps, add_audio_to_video, has_audio_stream
-from liveportrait.utils.crop import prepare_paste_back, paste_back
-from liveportrait.utils.io import load_image_rgb, load_video, resize_to_limit, dump, load
-from liveportrait.utils.helper import basename, dct2device, is_video, is_template, remove_suffix, is_image, calc_motion_multiplier
-from liveportrait.utils.filter import smooth
+from live_portrait.utils.camera import get_rotation_matrix
+from live_portrait.utils.video import images2video ## concat_frames, get_fps, add_audio_to_video, has_audio_stream
+from live_portrait.utils.crop import prepare_paste_back, paste_back
+from live_portrait.utils.io import load_image_rgb, load_video, resize_to_limit, dump, load
+from live_portrait.utils.helper import basename, dct2device, is_video, is_template, remove_suffix, is_image, calc_motion_multiplier
+from live_portrait.utils.filter import smooth
 
 # from .utils.viz import viz_lmk
-from liveportrait.wrapper import HumanWrapper
+from live_portrait.wrapper import HumanWrapper
 
 
 class HumanPipeline(object):
@@ -408,8 +408,8 @@ class HumanPipeline(object):
 
 
 if __name__ == '__main__':
-    from liveportrait.human_cropper import HumanCropper
-    from liveportrait.utils.helper import draw_landmarks
+    from live_portrait.human_cropper import HumanCropper
+    from live_portrait.utils.helper import draw_landmarks
     from rich.progress import track
     from datetime import datetime
     

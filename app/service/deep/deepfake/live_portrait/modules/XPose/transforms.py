@@ -12,8 +12,8 @@ import torchvision.transforms as T
 import torchvision.transforms.functional as F
 
 #sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from liveportrait.modules.XPose.util.box_ops import box_xyxy_to_cxcywh
-from liveportrait.modules.XPose.util.misc import interpolate
+from live_portrait.modules.XPose.util.box_ops import box_xyxy_to_cxcywh
+from live_portrait.modules.XPose.util.misc import interpolate
 
 
 def crop(image, target, region):

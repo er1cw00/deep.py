@@ -10,9 +10,10 @@ from numpy import ndarray
 import pickle as pkl
 from dataclasses import dataclass, field
 from typing import Literal, Tuple
-
 from dataclasses import dataclass
-from liveportrait.config.base_config import PrintableConfig, models_path, liveportrait_path
+
+from live_portrait.config.base_config import models_path, liveportrait_path
+from deepfake.utils import Printable
 
 def load_lip_array():
     p = os.path.abspath(os.path.join(liveportrait_path, 'resources/lip_array.pkl'))
@@ -20,8 +21,8 @@ def load_lip_array():
         return pkl.load(f)
     
     
-@dataclass(repr=False)  # use repr from PrintableConfig
-class InferenceConfig(PrintableConfig):
+@dataclass(repr=False)  # use repr from Printable
+class InferenceConfig(Printable):
   
     models_config: str = os.path.abspath(os.path.join(liveportrait_path,'config/models.yaml'))  # portrait animation config
     checkpoint_F: str = os.path.abspath(os.path.join(models_path, 'liveportrait/appearance_feature_extractor.safetensors'))  # path to checkpoint of F

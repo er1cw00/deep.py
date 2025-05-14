@@ -18,7 +18,7 @@ import math
 import torch
 from torch import nn
 
-from liveportrait.modules.XPose.util.misc import NestedTensor
+from live_portrait.modules.XPose.util.misc import NestedTensor
 
 
 class PositionEmbeddingSine(nn.Module):

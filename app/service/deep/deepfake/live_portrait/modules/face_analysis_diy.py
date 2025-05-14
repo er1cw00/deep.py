@@ -7,8 +7,8 @@ face detectoin and alignment using InsightFace
 import numpy as np
 from insightface.app import FaceAnalysis
 from insightface.app.common import Face
-from liveportrait.utils.timer import Timer
-from liveportrait.utils.io import contiguous
+from deepfake.utils.timer import Timer
+from live_portrait.utils.io import contiguous
 
 def sort_by_direction(faces, direction: str = 'large-small', face_center=None):
     if len(faces) <= 0:
@@ -83,8 +83,8 @@ class FaceAnalysisDIY(FaceAnalysis):
 if __name__ == '__main__':
     import cv2
     from rich.progress import track
-    from liveportrait.utils.helper import draw_landmarks
-    from liveportrait.utils.video import images2video
+    from live_portrait.utils.helper import draw_landmarks
+    from live_portrait.utils.video import images2video
     
     def test_image(detecter) :
         input_path = '../assets/liuyifei.jpg'
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     detecter = FaceAnalysisDIY( name="buffalo_l",
                     root='../../../models/insightface',
                     providers=providers)
-    detecter.prepare(ctx_id=0, det_size=(512, 512), det_thresh=0.1)
+    detecter.prepare(ctx_id=0, det_size=(512, 512), det_thresh=0.5)
     detecter.warmup()
     
     test_video(detecter)

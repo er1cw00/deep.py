@@ -8,13 +8,13 @@ import numpy as np
 from PIL import Image
 from torchvision.ops import nms
 
-from liveportrait.utils.timer import Timer
-from liveportrait.modules.XPose import transforms as T
-from liveportrait.modules.XPose.models import build_model
-from liveportrait.modules.XPose.predefined_keypoints import *
-from liveportrait.modules.XPose.util import box_ops
-from liveportrait.modules.XPose.util.config import Config
-from liveportrait.modules.XPose.util.misc import clean_state_dict
+from deepfake.utils.timer import Timer
+from live_portrait.modules.XPose import transforms as T
+from live_portrait.modules.XPose.models import build_model
+from live_portrait.modules.XPose.predefined_keypoints import *
+from live_portrait.modules.XPose.util import box_ops
+from live_portrait.modules.XPose.util.config import Config
+from live_portrait.modules.XPose.util.misc import clean_state_dict
 
 class XPoseRunner(object):
     def __init__(self, model_config_path, model_checkpoint_path, embeddings_cache_path=None, cpu_only=False, **kwargs):

@@ -5,11 +5,11 @@ import cv2; cv2.setNumThreads(0); cv2.ocl.setUseOpenCL(False)
 
 from .base_cropper import Trajectory
 
-from liveportrait.modules.face_analysis_diy import FaceAnalysisDIY
-from liveportrait.modules.landmark_runner_human import LandmarkRunner as HumanLandmarkRunner
-from liveportrait.config.crop_config import CropConfig
-from liveportrait.utils.io import contiguous
-from liveportrait.utils.crop import (
+from live_portrait.modules.face_analysis_diy import FaceAnalysisDIY
+from live_portrait.modules.landmark_runner_human import LandmarkRunner as HumanLandmarkRunner
+from live_portrait.config.crop_config import CropConfig
+from live_portrait.utils.io import contiguous
+from live_portrait.utils.crop import (
     average_bbox_lst,
     crop_image,
     crop_image_by_bbox,
@@ -171,8 +171,8 @@ class HumanCropper(object):
 
 if __name__ == '__main__':
     from rich.progress import track
-    from liveportrait.utils.video import images2video
-    from liveportrait.utils.helper import draw_landmarks
+    from live_portrait.utils.video import images2video
+    from live_portrait.utils.helper import draw_landmarks
     
     def test_image(input_file, cropper) :
         image = cv2.imread(input_file)
