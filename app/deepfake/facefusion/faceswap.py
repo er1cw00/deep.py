@@ -9,9 +9,7 @@ from .modules.gfpgan import GFPGAN
 from .modules.yoloface import YoloFace
 from .utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark_5, paste_back, blend_frame
 from .facemask import FaceMasker
-from deepfake.utils import Printable
-
-
+from ..utils import Printable
 
 @dataclass(repr=False)  # use repr from Printable
 class FaceSwapConfig(Printable):

@@ -1,13 +1,12 @@
 import cv2
 import os
 import numpy as np
-
-from .modules.xseg import XSeg
-from .modules.resnet34 import Resnet34
-from .utils.mask import create_bbox_mask, FaceMaskRegion, FaceMaskRegionMap, FaceMaskAllRegion
-from dataclasses import dataclass, field 
 from typing import Literal, List, Tuple
-from deepfake.utils import Printable
+from dataclasses import dataclass, field 
+from app.deepfake.utils import Printable
+from app.deepfake.facefusion.modules.xseg import XSeg
+from app.deepfake.facefusion.modules.resnet34 import Resnet34
+from app.deepfake.facefusion.utils.mask import create_bbox_mask, FaceMaskRegion, FaceMaskRegionMap, FaceMaskAllRegion
 
 
 @dataclass(repr=False)  # use repr from Printable

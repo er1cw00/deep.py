@@ -6,8 +6,7 @@ import argparse
 import cv2
 import numpy as np
 import onnxruntime
-#from facefusion.utils import FaceMaskRegionMap, FaceMaskAllRegion
-from ..utils.mask import FaceMaskRegionMap, FaceMaskAllRegion
+from app.deepfake.facefusion.utils.mask import FaceMaskRegionMap, FaceMaskAllRegion
 
 class Resnet34:
     def __init__(self, model_path, providers):

@@ -6,7 +6,7 @@ import argparse
 import cv2
 import numpy as np
 import onnxruntime
-from facefusion.utils.affine import arcface_112_v2, warp_face_by_landmark_5
+from app.deepfake.facefusion.utils.affine import arcface_112_v2, warp_face_by_landmark_5
 
 class ArcFaceW600k:
     def __init__(self, model_path, providers):
@@ -39,7 +39,7 @@ def face_distance(e0, e1):
     return 1 - np.dot(e0[2], e1[2])
 
 if __name__ == "__main__":
-    from yoloface import YoloFace
+    from app.deepfake.facefusion.modules.yoloface import YoloFace
     import itertools
     
     def calc_face_embedding(image, yolo, recognizer):

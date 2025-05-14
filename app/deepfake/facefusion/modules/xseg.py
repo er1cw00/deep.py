@@ -44,12 +44,12 @@ class XSeg:
         return output
         
 if __name__ == "__main__":
-    from deepfake.facefusion.modules.yoloface import YoloFace
-    from deepfake.facefusion.modules.occluder import Occluder
-    from deepfake.facefusion.utils.mask import overlay_mask_on_face
-    from deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark_5, paste_back, blend_frame
-    from deepfake.utils.video import get_video_writer
-    from deepfake.utils.timer import Timer
+    from app.deepfake.facefusion.modules.yoloface import YoloFace
+    from app.deepfake.facefusion.modules.occluder import Occluder
+    from app.deepfake.facefusion.utils.mask import overlay_mask_on_face
+    from app.deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark_5, paste_back, blend_frame
+    from app.deepfake.utils.video import get_video_writer
+    from app.deepfake.utils.timer import Timer
     from rich.progress import track
 
     import imageio

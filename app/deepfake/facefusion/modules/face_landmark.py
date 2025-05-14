@@ -7,7 +7,7 @@ import argparse
 import imageio
 import numpy as np
 import onnxruntime
-from deepfake.facefusion.utils.affine import warp_face_by_translation
+from app.deepfake.facefusion.utils.affine import warp_face_by_translation
 
 class FaceLandmark_2dFan:
     def __init__(self, model_path, providers):
@@ -51,12 +51,12 @@ class FaceLandmark_2dFan:
 
       
 if __name__ == "__main__":
-    from .yoloface import YoloFace
-    from .occluder import Occluder
+    from app.deepfake.facefusion.modules.yoloface import YoloFace
+    from app.deepfake.facefusion.modules.occluder import Occluder
+    from app.deepfake.facefusion.utils.mask import overlay_mask_on_face
+    from app.deepfake.utils.face import draw_landmarks, convert_face_landmark_68_to_5
+    from app.deepfake.utils.timer import Timer
     from rich.progress import track
-    from deepfake.facefusion.utils.mask import overlay_mask_on_face
-    from deepfake.utils.face import draw_landmarks, convert_face_landmark_68_to_5
-    from deepfake.utils.timer import Timer
     import imageio
     import cv2
     import time

@@ -7,8 +7,8 @@ face detectoin and alignment using InsightFace
 import numpy as np
 from insightface.app import FaceAnalysis
 #from insightface.app.common import Face
-from deepfake.utils.timer import Timer
-from deepfake.utils.face import Face, sort_by_order
+from app.deepfake.utils.timer import Timer
+from app.deepfake.utils.face import Face, sort_by_order
 
 
 class FaceAnalysisDIY(FaceAnalysis):
@@ -66,8 +66,8 @@ class FaceAnalysisDIY(FaceAnalysis):
 
 if __name__ == "__main__":
     import cv2
-    from deepfake.utils.face import convert_face_landmark_68_to_5, draw_landmarks
-    from deepfake.utils.video import get_video_writer
+    from app.deepfake.utils.face import convert_face_landmark_68_to_5, draw_landmarks
+    from app.deepfake.utils.video import get_video_writer
     from rich.progress import track
     
     

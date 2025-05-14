@@ -8,7 +8,7 @@ import numpy as np
 import onnx
 import onnxruntime
 from functools import lru_cache
-from facefusion.utils.tiles import split_into_tiles, merge_from_tiles
+from app.deepfake.facefusion.utils.tiles import split_into_tiles, merge_from_tiles
 
 class InSwapper:
     def __init__(self, model_path, providers):

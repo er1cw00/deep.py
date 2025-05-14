@@ -79,12 +79,13 @@ class UniFace:
 
 
 if __name__ == "__main__":
-    from live_portrait.utils.video import images2video
-    from facefusion.utils.affine import ffhq_512, arcface_128_v2, warp_face_by_landmark_5, paste_back, blend_frame
-    from facefusion.utils.mask import create_bbox_mask
+    from app.deepfake.facefusion.modules.yoloface import YoloFace
+    from app.deepfake.facefusion.modules.arcface import ArcFaceW600k
+    from app.deepfake.live_portrait.utils.video import images2video
+    from app.deepfake.facefusion.utils.affine import ffhq_512, arcface_128_v2, warp_face_by_landmark_5, paste_back, blend_frame
+    from app.deepfake.facefusion.utils.mask import create_bbox_mask
     from rich.progress import track
-    from .yoloface import YoloFace
-    from .arcface import ArcFaceW600k
+
     import itertools
     
     def calc_face_embedding(image, yolo, recognizer):

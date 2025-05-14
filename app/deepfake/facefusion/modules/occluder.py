@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-import sys
-import argparse
 import cv2
 import numpy as np
 import onnxruntime
@@ -47,12 +45,12 @@ class Occluder:
     
       
 if __name__ == "__main__":
-    from .yoloface import YoloFace
-    from .occluder import Occluder
+    from app.deepfake.facefusion.modules.yoloface import YoloFace
+    from app.deepfake.facefusion.modules.occluder import Occluder
+    from app.deepfake.facefusion.utils.mask import overlay_mask_on_face
+    from app.deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark_5, paste_back, blend_frame
+    from app.deepfake.utils.video import get_video_writer
     from rich.progress import track
-    from ..utils.mask import overlay_mask_on_face
-    from ..utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark_5, paste_back, blend_frame
-    #from deep.utils import get_providers_from_device, get_video_writer
     
     import imageio
     import cv2
@@ -128,25 +126,7 @@ if __name__ == "__main__":
         cap.release()
         writer.close()
         print(f'total time: {t:.4f} sec; total frames: {total}; average time per frame: {t/total:.4f} sec')
-        
-    def get_video_writer(outout_path, fps):
-        video_format = 'mp4'     # default is mp4 format
-        codec = 'libx264'        # default is libx264 encoding
-        #quality = quality        # video quality
-        pixelformat = 'yuv420p'  # video pixel format
-        image_mode = 'rbg'
-        macro_block_size = 2
-        ffmpeg_params = ['-crf', '20']
-        writer = imageio.get_writer(uri=outout_path,
-                            format=video_format,
-                            fps=fps, 
-                            codec=codec, 
-                            #quality=quality, 
-                            ffmpeg_params=ffmpeg_params, 
-                            pixelformat=pixelformat, 
-                            macro_block_size=macro_block_size)
-        return writer
-        
+            
     providers = ['CoreMLExecutionProvider']
     yolo_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx'
     seg_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/dfl_xseg.onnx'

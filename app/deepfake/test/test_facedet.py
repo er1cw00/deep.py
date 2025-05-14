@@ -3,13 +3,13 @@ import cv2
 import time
 import numpy as np
 from rich.progress import track
-from deepfake.utils.face import draw_landmarks, convert_face_landmark_68_to_5
-from deepfake.facefusion.modules.yoloface import YoloFace
-from deepfake.facefusion.modules.retinaface import RetinaFace
-from deepfake.facefusion.modules.face_landmark import FaceLandmark_2dFan
-# from deepfake.utils.face import expand_bbox
-from deepfake.utils.timer import Timer
-from deepfake.utils.video import get_video_writer
+from app.deepfake.utils.timer import Timer
+from app.deepfake.utils.video import get_video_writer
+from app.deepfake.utils.face import draw_landmarks, convert_face_landmark_68_to_5
+from app.deepfake.facefusion.modules.yoloface import YoloFace
+from app.deepfake.facefusion.modules.retinaface import RetinaFace
+from app.deepfake.facefusion.modules.face_landmark import FaceLandmark_2dFan
+
 from .file import get_test_files
     
 def get_one_face(det, image):
@@ -18,13 +18,6 @@ def get_one_face(det, image):
         return face_list[0]
     return None
 
-# def draw_bbox(image, face):
-#     x1, y1, x2, y2 = map(int, face.bbox)
-#     cv2.rectangle(image, (x1,y1), (x2,y2), (255, 0, 0), 1)
-#     (new_x1, new_y1, new_x2, new_y2) = expand_bbox(face.bbox, 512)
-#     face_cropped = image[new_y1:new_y2, new_x1:new_x2]
-#     resized_face = cv2.resize(face_cropped, (512, 512))
-#     return resized_face
     
 def test_image(det1, det2, landmark, input_path, output_path):
     t1 = Timer()
