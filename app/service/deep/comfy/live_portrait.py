@@ -7,8 +7,13 @@ import argparse
 
 
 from app.base.error import Error
-from app.service.deep.utils import get_providers_from_device, get_video_writer
-from app.service.deep.utils import add_tbox_path_to_sys_path, add_comfy_path_to_sys_path
+from app.deepfake.utils import get_providers_from_device, get_video_writer
+from app.deepfake.live_portrait.config.crop_config import CropConfig
+from app.deepfake.live_portrait.config.inference_config import InferenceConfig
+from app.deepfake.live_portrait.human_cropper import HumanCropper
+from app.deepfake.live_portrait.human_pipeline import HumanPipeline
+
+# from app.service.deep.utils import add_tbox_path_to_sys_path, add_comfy_path_to_sys_path
 
         
 
@@ -24,10 +29,10 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--comfyui-directory",
-    "-c",
+    "--model_path",
+    "-m",
     default=None,
-    help="Where to look for ComfyUI (default: current directory)",
+    help="Where to load LivePortrail model",
 )
 
 parser.add_argument(
@@ -51,31 +56,14 @@ if device not in ["cuda", "mps", "rocm"]:
         
 print(f'device ({device})')
 
-if args.task_path is None or os.path.isdir(os.path.dirname(args.task_path)) == False:
+if args.task_path is None or os.path.isdir(args.task_path) == False:
     print(f'task_path: {args.task_path} not exist')
     sys.exit(1001) 
-
-comfy_path = args.comfyui_directory
-if comfy_path is None or os.path.isdir(comfy_path) == False:
-    print(f"ComfyUI path not found: {comfy_path}")
+    
+if args.model_path is None or os.path.isdir(args.model_path) == False:
+    print(f'model_path: {args.model_path} not exist')
     sys.exit(1001) 
     
-tbox_path = os.path.join(comfy_path, "custom_nodes/ComfyUI-tbox/src")
-if tbox_path is None or os.path.isdir(tbox_path) == False:
-    print(f"ComfyUI tbox path not found: {tbox_path}")
-    sys.exit(1001) 
-
-add_comfy_path_to_sys_path(comfy_path)
-add_tbox_path_to_sys_path(tbox_path)
-
-import folder_paths
-from liveportrait.config.crop_config import CropConfig
-from liveportrait.config.inference_config import InferenceConfig
-from liveportrait.human_cropper import HumanCropper
-from liveportrait.human_pipeline import HumanPipeline
-
-model_path = folder_paths.models_dir
-
 class LivePortrait:
     def __init__(self, model_path, device):
         self.device = device
@@ -87,25 +75,32 @@ class LivePortrait:
         else:
             providers = get_providers_from_device(device)
         
-        cropConfig = CropConfig()
-        cropConfig.insightface_root = os.path.join(self.model_path, "insightface")
-        cropConfig.landmark_ckpt_path = os.path.join(self.model_path, 'liveportrait/landmark.onnx')
+        cropConfig = CropConfig(
+            insightface_root = os.path.join(self.model_path, "insightface"),
+            landmark_ckpt_path = os.path.join(self.model_path, 'liveportrait/landmark.onnx'),
+            xpose_ckpt_path = os.path.join(self.model_path, 'liveportrait/animal/xpose.pth'),
+        )
 
         self.cropper = HumanCropper(crop_cfg=cropConfig, providers=providers)
         
-        inferConfig = InferenceConfig()
+        inferConfig = InferenceConfig(
+            checkpoint_F = os.path.join(self.model_path, 'liveportrait/appearance_feature_extractor.safetensors'), 
+            checkpoint_M = os.path.join(self.model_path,'liveportrait/motion_extractor.safetensors'),
+            checkpoint_G = os.path.join(self.model_path,'liveportrait/spade_generator.safetensors'),
+            checkpoint_W = os.path.join(self.model_path,'liveportrait/warping_module.safetensors'),
+            checkpoint_S = os.path.join(self.model_path,'liveportrait/stitching_retargeting_module.safetensors'),
+            
+            checkpoint_F_animal = os.path.join(self.model_path, 'liveportrait/animal/appearance_feature_extractor.safetensors'),
+            checkpoint_M_animal = os.path.join(self.model_path, 'liveportrait/animal/motion_extractor.safetensors'),
+            checkpoint_G_animal = os.path.join(self.model_path, 'liveportrait/animal/spade_generator.safetensors'),
+            checkpoint_W_animal = os.path.join(self.model_path, 'liveportrait/animal/warping_module.safetensors'),
+            checkpoint_S_animal = os.path.join(self.model_path, 'liveportrait/animal/stitching_retargeting_module.safetensors'),
+        )
         inferConfig.device = self.device
-        
-        inferConfig.checkpoint_F = os.path.join(self.model_path, 'liveportrait/appearance_feature_extractor.safetensors') 
-        inferConfig.checkpoint_M = os.path.join(self.model_path,'liveportrait/motion_extractor.safetensors')
-        inferConfig.checkpoint_G = os.path.join(self.model_path,'liveportrait/spade_generator.safetensors')
-        inferConfig.checkpoint_W = os.path.join(self.model_path,'liveportrait/warping_module.safetensors')
-        inferConfig.checkpoint_S = os.path.join(self.model_path,'liveportrait/stitching_retargeting_module.safetensors')
 
         self.pipeline = HumanPipeline(inference_cfg=inferConfig)   
         
     def process(self, task_path):
-#        task_path = task.get_task_path()
         source_path = os.path.join(task_path, 'target.jpg')
         driving_path = os.path.join(task_path, 'source.mp4')
         output_path = os.path.join(task_path, 'output.mp4')
@@ -161,26 +156,14 @@ class LivePortrait:
             writer.append_data(image[..., ::-1])
         
 
-print(f'model_path: {model_path}, device: {device}, task_path: {args.task_path}')
-liveportrait = LivePortrait(model_path, device)
+print(f'device: {device}, model_path: {args.model_path}, task_path: {args.task_path}')
+liveportrait = LivePortrait(args.model_path, device)
 liveportrait.process(args.task_path)
     
-
-# args = None
-# if __name__ == "__main__":
-#     args = parser.parse_args()
-#     sys.argv = comfy_args
-# if args is not None and args.output is not None and args.output == "-":
-#     ctx = contextlib.redirect_stdout(sys.stderr)
-# else:
-#     ctx = contextlib.nullcontext()
-    
-# if __name__ == "__main__":
-#     main()
 
 
 # python -m app.service.deep.comfy.live_portrait \
 #     --device "mps" \
-#     --task_path "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task/20240919/s5a0efb23a4f7a9fcbb2b9b874df77d82/" \
-#     --comfyui-directory "/Users/wadahana/workspace/AI/sd/ComfyUI"
+#     --task_path "/Users/wadahana/workspace/AI/tbox.ai/deep.py/task/20250505/e99e58e983130db43bcac9fa0948e27d/" \
+#     --model_path "/Users/wadahana/workspace/AI/sd/ComfyUI/models"
 
