@@ -20,6 +20,25 @@ class TaskType:
     FaceSwap        = 1007              # 原TaskFaceSwap
     MaxComfyTask    = 1007              # 范围标记保持原名
 
+def get_task_type_name(t):
+    if t == TaskType.Dummy: 
+        return 'dummy'
+    elif t == TaskType.Upscale: 
+        return 'unscale'
+    elif t == TaskType.Rmbg: 
+        return 'rmbg'
+    elif t == TaskType.Anime: 
+        return 'anime'
+    elif t == TaskType.LivePortrait: 
+        return 'liveportrait'
+    elif t == TaskType.Txt2Img: 
+        return 'txt2img'
+    elif t == TaskType.FaceRestore: 
+        return 'facerestore'
+    elif t == TaskType.FaceSwap: 
+        return 'faceswap'
+    return 'unknonw'
+    
 class TaskState:
     Unknown     = 0              # 原TaskStateNone（避免与Python关键字None冲突）
     InQueue     = 1              # 原TaskStateInQueue
