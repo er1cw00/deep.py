@@ -5,11 +5,11 @@ import cv2; cv2.setNumThreads(0); cv2.ocl.setUseOpenCL(False)
 
 from .base_cropper import Trajectory
 
-from live_portrait.modules.face_analysis_diy import FaceAnalysisDIY
-from live_portrait.modules.landmark_runner_human import LandmarkRunner as HumanLandmarkRunner
-from live_portrait.config.crop_config import CropConfig
-from live_portrait.utils.io import contiguous
-from live_portrait.utils.crop import (
+from .modules.face_analysis_diy import FaceAnalysisDIY
+from .modules.landmark_runner_human import LandmarkRunner as HumanLandmarkRunner
+from .config.crop_config import CropConfig
+from .utils.io import contiguous
+from .utils.crop import (
     average_bbox_lst,
     crop_image,
     crop_image_by_bbox,

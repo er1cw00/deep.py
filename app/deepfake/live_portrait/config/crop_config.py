@@ -6,18 +6,19 @@ parameters used for crop faces
 
 import os
 from dataclasses import dataclass
+from app.base.printable import Printable
 from typing import Tuple
-from deepfake.live_portrait.config.base_config import liveportrait_path, models_path
-from deepfake.utils import Printable
+from .base_config import liveportrait_path
+
 
 @dataclass(repr=False)  # use repr from Printable
 class CropConfig(Printable):
-    insightface_root: str = os.path.abspath(os.path.join(models_path, 'insightface'))
-    landmark_ckpt_path: str = os.path.abspath(os.path.join(models_path, 'liveportrait/landmark.onnx'))
+    insightface_root: str #= os.path.abspath(os.path.join(models_path, 'insightface'))
+    landmark_ckpt_path: str #= os.path.abspath(os.path.join(models_path, 'liveportrait/landmark.onnx'))
+    xpose_ckpt_path: str #= os.path.abspath(os.path.join(models_path, 'liveportrait/animal/xpose.pth'))
     xpose_config_file_path: str = os.path.abspath(os.path.join(liveportrait_path, "modules/XPose/config_model/UniPose_SwinT.py"))
     xpose_embedding_cache_path: str = os.path.abspath(os.path.join(liveportrait_path, 'resources/clip_embedding'))
-    xpose_ckpt_path: str = os.path.abspath(os.path.join(models_path, 'liveportrait/animal/xpose.pth'))
-
+    
     device_id: int = 0  # gpu device id
     flag_force_cpu: bool = False  # force cpu inference, WIP
     det_thresh: float = 0.1 # detection threshold

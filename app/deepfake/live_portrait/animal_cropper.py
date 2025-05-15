@@ -6,9 +6,9 @@ from PIL import Image
 from .base_cropper import Trajectory
 from .human_cropper import HumanCropper
 
-from live_portrait.modules.landmark_runner_animal import XPoseRunner as AnimalLandmarkRunner
-from live_portrait.config.crop_config import CropConfig
-from live_portrait.utils.crop import (
+from .modules.landmark_runner_animal import XPoseRunner as AnimalLandmarkRunner
+from .config.crop_config import CropConfig
+from .utils.crop import (
     average_bbox_lst,
     crop_image,
     crop_image_by_bbox,

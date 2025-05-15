@@ -19,16 +19,16 @@ import os.path as osp
 from rich.progress import track
 
 
-from live_portrait.config.inference_config import InferenceConfig
-from live_portrait.config.crop_config import CropConfig
-from live_portrait.utils.camera import get_rotation_matrix
-from live_portrait.utils.video import images2video#, concat_frames, get_fps, add_audio_to_video, has_audio_stream, video2gif
-from live_portrait.utils.crop import _transform_img, prepare_paste_back, paste_back
-from live_portrait.utils.io import load_image_rgb, load_video, resize_to_limit, dump, load
-from live_portrait.utils.helper import basename, dct2device, is_video, is_template, remove_suffix, is_image, calc_motion_multiplier
+from .config.inference_config import InferenceConfig
+from .config.crop_config import CropConfig
+from .utils.camera import get_rotation_matrix
+from .utils.video import images2video#, concat_frames, get_fps, add_audio_to_video, has_audio_stream, video2gif
+from .utils.crop import _transform_img, prepare_paste_back, paste_back
+from .utils.io import load_image_rgb, load_video, resize_to_limit, dump, load
+from .utils.helper import basename, dct2device, is_video, is_template, remove_suffix, is_image, calc_motion_multiplier
 
 # from .utils.viz import viz_lmk
-from live_portrait.wrapper import AnimalWrapper
+from .wrapper import AnimalWrapper
 
 
 class AnimalPipeline(object):

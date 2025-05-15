@@ -48,9 +48,11 @@ class Face(dict):
 
     @property 
     def normed_embedding(self):
-        if self.embedding is None:
-            return None
-        return self.embedding / self.embedding_norm
+        if self._normed_embedding is None:
+            if self.embedding is None:
+                return None
+            self._normed_embedding = self.embedding / self.embedding_norm
+        return self._normed_embedding
 
     @property 
     def sex(self):

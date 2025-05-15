@@ -11,11 +11,11 @@ import cv2
 import torch
 import yaml
 
-from deepfake.utils.timer import Timer
-from live_portrait.utils.helper import load_model, concat_feat
-from live_portrait.utils.camera import headpose_pred_to_degree, get_rotation_matrix
-from live_portrait.utils.retargeting_utils import calc_eye_close_ratio, calc_lip_close_ratio
-from live_portrait.config.inference_config import InferenceConfig
+from ..utils.timer import Timer
+from .utils.helper import load_model, concat_feat
+from .utils.camera import headpose_pred_to_degree, get_rotation_matrix
+from .utils.retargeting_utils import calc_eye_close_ratio, calc_lip_close_ratio
+from .config.inference_config import InferenceConfig
 
 
 class HumanWrapper(object):

@@ -12,8 +12,8 @@ from dataclasses import dataclass, field
 from typing import Literal, Tuple
 from dataclasses import dataclass
 
-from live_portrait.config.base_config import models_path, liveportrait_path
-from deepfake.utils import Printable
+from .base_config import liveportrait_path
+from app.base.printable import Printable
 
 def load_lip_array():
     p = os.path.abspath(os.path.join(liveportrait_path, 'resources/lip_array.pkl'))
@@ -24,22 +24,22 @@ def load_lip_array():
 @dataclass(repr=False)  # use repr from Printable
 class InferenceConfig(Printable):
   
-    models_config: str = os.path.abspath(os.path.join(liveportrait_path,'config/models.yaml'))  # portrait animation config
-    checkpoint_F: str = os.path.abspath(os.path.join(models_path, 'liveportrait/appearance_feature_extractor.safetensors'))  # path to checkpoint of F
-    checkpoint_M: str = os.path.abspath(os.path.join(models_path,'liveportrait/motion_extractor.safetensors'))  # path to checkpoint pf M
-    checkpoint_G: str = os.path.abspath(os.path.join(models_path,'liveportrait/spade_generator.safetensors'))  # path to checkpoint of G
-    checkpoint_W: str = os.path.abspath(os.path.join(models_path,'liveportrait/warping_module.safetensors'))  # path to checkpoint of W
-    checkpoint_S: str = os.path.abspath(os.path.join(models_path,'liveportrait/stitching_retargeting_module.safetensors'))  # path to checkpoint to S and R_eyes, R_lip
+    checkpoint_F: str #= os.path.abspath(os.path.join(models_path, 'liveportrait/appearance_feature_extractor.safetensors'))  # path to checkpoint of F
+    checkpoint_M: str #= os.path.abspath(os.path.join(models_path,'liveportrait/motion_extractor.safetensors'))  # path to checkpoint pf M
+    checkpoint_G: str #= os.path.abspath(os.path.join(models_path,'liveportrait/spade_generator.safetensors'))  # path to checkpoint of G
+    checkpoint_W: str #= os.path.abspath(os.path.join(models_path,'liveportrait/warping_module.safetensors'))  # path to checkpoint of W
+    checkpoint_S: str #= os.path.abspath(os.path.join(models_path,'liveportrait/stitching_retargeting_module.safetensors'))  # path to checkpoint to S and R_eyes, R_lip
 
     # ANIMAL MODEL CONFIG, NOT EXPORTED PARAMS
-    version_animals = "" # old version
+    #version_animals = "" # old version
     #version_animals = "_v1.1" # new (v1.1) version
-    checkpoint_F_animal: str = os.path.abspath(os.path.join(models_path,f'liveportrait/animal/appearance_feature_extractor.safetensors'))  # path to checkpoint of F
-    checkpoint_M_animal: str = os.path.abspath(os.path.join(models_path,f'liveportrait/animal/motion_extractor.safetensors'))  # path to checkpoint pf M
-    checkpoint_G_animal: str = os.path.abspath(os.path.join(models_path,f'liveportrait/animal/spade_generator.safetensors'))  # path to checkpoint of G
-    checkpoint_W_animal: str = os.path.abspath(os.path.join(models_path,f'liveportrait/animal/warping_module.safetensors'))  # path to checkpoint of W
-    checkpoint_S_animal: str = os.path.abspath(os.path.join(models_path,f'liveportrait/animal/stitching_retargeting_module.safetensors'))  # path to checkpoint to S and R_eyes, R_lip, NOTE: use human temporarily!
+    checkpoint_F_animal: str #= os.path.abspath(os.path.join(models_path,f'liveportrait/animal/appearance_feature_extractor.safetensors'))  # path to checkpoint of F
+    checkpoint_M_animal: str #= os.path.abspath(os.path.join(models_path,f'liveportrait/animal/motion_extractor.safetensors'))  # path to checkpoint pf M
+    checkpoint_G_animal: str #= os.path.abspath(os.path.join(models_path,f'liveportrait/animal/spade_generator.safetensors'))  # path to checkpoint of G
+    checkpoint_W_animal: str #= os.path.abspath(os.path.join(models_path,f'liveportrait/animal/warping_module.safetensors'))  # path to checkpoint of W
+    checkpoint_S_animal: str #= os.path.abspath(os.path.join(models_path,f'liveportrait/animal/stitching_retargeting_module.safetensors'))  # path to checkpoint to S and R_eyes, R_lip, NOTE: use human temporarily!
     
+    models_config: str = os.path.abspath(os.path.join(liveportrait_path,'config/models.yaml'))  # portrait animation config
     # EXPORTED PARAMS
     flag_use_half_precision: bool = True
     flag_crop_driving_video: bool = False
