@@ -18,7 +18,7 @@ class InSwapper:
         self.session  = onnxruntime.InferenceSession(model_path, providers=providers)
         inputs = self.session.get_inputs()
         for input in inputs:
-            print(f'input: {input.name}, shape: {input.shape}')
+            #print(f'InSwapperinput: {input.name}, shape: {input.shape}')
             if input.name == 'target':
                 self.target_size = (input.shape[2], input.shape[3])
             elif input.name == 'source':
