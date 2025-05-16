@@ -42,27 +42,11 @@ parser.add_argument(
     help="The source portrait photo to anime . should be a file path",
 )
 
-args = parser.parse_args()
+
 
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
-device = args.device.lower()
-if device not in ["cuda", "mps", "rocm"]:
-    if device == "coreml":
-        device = "mps"
-    else:
-        print(f'deivce ({device}) unsupport, fallback to CPU')
-        device = 'cpu'
-        
-print(f'device ({device})')
 
-if args.task_path is None or os.path.isdir(args.task_path) == False:
-    print(f'task_path: {args.task_path} not exist')
-    sys.exit(1001) 
-    
-if args.model_path is None or os.path.isdir(args.model_path) == False:
-    print(f'model_path: {args.model_path} not exist')
-    sys.exit(1001) 
     
 class LivePortrait:
     def __init__(self, model_path, device):
@@ -156,10 +140,33 @@ class LivePortrait:
             writer.append_data(image[..., ::-1])
         
 
-print(f'device: {device}, model_path: {args.model_path}, task_path: {args.task_path}')
-liveportrait = LivePortrait(args.model_path, device)
-liveportrait.process(args.task_path)
+
+def main(*func_args, **func_kwargs):
+    args = parser.parse_args()
+    device = args.device.lower()
+    if device not in ["cuda", "mps", "rocm"]:
+        if device == "coreml":
+            device = "mps"
+        else:
+            print(f'deivce ({device}) unsupport, fallback to CPU')
+            device = 'cpu'
+            
+    print(f'device ({device})')
+
+    if args.task_path is None or os.path.isdir(args.task_path) == False:
+        print(f'task_path: {args.task_path} not exist')
+        sys.exit(1001) 
+        
+    if args.model_path is None or os.path.isdir(args.model_path) == False:
+        print(f'model_path: {args.model_path} not exist')
+        sys.exit(1001) 
+        
+    print(f'device: {device}, model_path: {args.model_path}, task_path: {args.task_path}')
+    liveportrait = LivePortrait(args.model_path, device)
+    liveportrait.process(args.task_path)
     
+if __name__ == "__main__":
+    main()
 
 
 # python -m app.service.deep.comfy.live_portrait \

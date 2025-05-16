@@ -176,3 +176,4 @@ app/version.py
 *.mp4
 .DS_Store
 app/service/deep/trt_cache/*
+task

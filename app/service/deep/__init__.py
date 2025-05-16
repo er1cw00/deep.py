@@ -8,19 +8,21 @@ from loguru import logger
 from app.model.task import TaskState, TaskType 
 from app.base.config import config
 from app.base.error import Error
-from .utils import add_tbox_path_to_sys_path, add_comfy_path_to_sys_path
+
+from app.service.deep.rmbg import RMBG
+from app.service.deep.faceswap import FaceSwapper, FaceMaskConfig
+from app.service.deep.utils import add_tbox_path_to_sys_path, add_comfy_path_to_sys_path
 
 class Deep:
     def __init__(self):        
         self._swapper = None
         self._rmbg = None
-        self._restore = None  
         
         self.comfy_path = None
         self.tbox_path = None
         self.ckpt_list = {}
         self.lora_list = {}
-        
+            
     def init(self):
         if torch.cuda.is_available():
             self.device = "cuda"
@@ -76,38 +78,56 @@ class Deep:
         return lora['model'], lora['clip_skip']
     
     def reset(self, task_type):
-        if task_type == TaskType.Rmbg:
-           self._restore = None
-        elif task_type == TaskType.FaceRestore:
-            self._rmbg = None
-        else:
-            self._rmbg = None
-            self._restore = None
-        if self.device == 'cuda':
-            torch.cuda.empty_cache() 
-            torch.cuda.ipc_collect()
+        pass
+        # if task_type == TaskType.Rmbg:
+        #    self._restore = None
+        # elif task_type == TaskType.FaceRestore or :
+        #     self._rmbg = None
+        # else:
+        #     self._rmbg = None
+        # if self.device == 'cuda':
+        #     torch.cuda.empty_cache() 
+        #     torch.cuda.ipc_collect()
         
-    def faceswap(self, task):
-        from .faceswap import FaceSwapper
-        self.reset(TaskType.FaceSwap)
+    
+    def do_faceswap(self, task):
         if self._swapper == None:
-            self._swapper = FaceSwapper('inswapper_128', self.model_path, self.device)
+            mask_config = FaceMaskConfig(
+                bbox=True,
+                bbox_blur=0.3,
+                occlusion=True,
+            )
+            model_path = os.path.join(self.model_path, 'facefusion')
+            self._swapper = FaceSwapper(model_path=model_path,
+                                device="mps", 
+                                mask_config=mask_config,
+                                show_progress=True)
         return self._swapper.process(task)
+    
+    def faceswap(self, task):
+        self.reset(TaskType.FaceSwap)
+        return self.do_faceswap(task)
+    
+    def restore(self, task):
+        self.reset(TaskType.FaceRestore)
+        return self.do_faceswap(task)
+    
+    def rmbg(self, task):
+        self.reset(TaskType.Rmbg)
+        if self._rmbg == None:
+            model_path = os.path.join(self.model_path, 'bria')
+            self._rmbg = RMBG(model_path=model_path, device=self.device)
+        return self._rmbg.process(task)
     
     def liveportrait(self, task):
         task_path = task.get_task_path()
         output_path = os.path.join(task_path, 'output.mp4')
         liveportrait_path = os.path.join(os.path.dirname(__file__), "comfy/live_portrait.py")
-        device = 'CPU'
-        if self.device == 'cuda':
-            device = 'CUDA'
-        elif self.device == 'mps':
-            device = 'CoreML'
         commands = [
                 'python', liveportrait_path, 
-                '-c', self.comfy_path,
-                '-p', task_path,
-                '-d', device
+                '-d', self.device,
+                '-m', self.model_path,
+                '-p', task_path
             ]
         err = self.do_exec(commands=commands)
         if err != Error.OK:
@@ -117,19 +137,9 @@ class Deep:
             return output_path, Error.OK
         return '',  Error.FileNotFound
     
-    def rmbg(self, task):
-        from .rmbg import RMBG
-        self.reset(TaskType.Rmbg)
-        if self._rmbg == None:
-            self._rmbg = RMBG(self.model_path, self.device)
-        return self._rmbg.process(task)
+
     
-    def restore(self, task):
-        from .facerestore import FaceRestore
-        self.reset(TaskType.FaceRestore)
-        if self._restore == None:
-            self._restore = FaceRestore(self.model_path, self.device)
-        return self._restore.process(task)
+   
     
     def do_exec(self, commands):
         try:
@@ -148,17 +158,18 @@ class Deep:
         ckpt_model = self.check_ckpt(task.txt2img.checkpoint)
         print(f'ckpt_model: {ckpt_model}')
         #lora_model, clip_skip = self.check_lora(task.txt2img.lora)
+        positive_prompt = '' + task.txt2img.positive_prompt
         negative_prompt = 'watermark,nsfw,' + task.txt2img.negative_prompt
         commands = [
                 'python', txt2img_path, 
-                '-c', self.comfy_path,
+                '-d', self.device,
+                '-m', self.model_path,
+                '-c', ckpt_model,
                 '-o', output_path,
                 '-W', str(task.txt2img.width),
                 '-H', str(task.txt2img.height),
-                '-m', ckpt_model,
-                '-P', task.txt2img.positive_prompt,
-                '-N', negative_prompt,
-                '-F', str(task.txt2img.face_detailer == True)
+                '-P', positive_prompt,
+                '-N', negative_prompt
             ]
         logger.debug(f'commands: {commands}')
         err = self.do_exec(commands=commands)
