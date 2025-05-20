@@ -16,6 +16,7 @@ def do_exec(commands):
         return Error.SubprocessFail
     
 def get_task_info(task_id, task_type, video):
+#    task_path = f'/home/eric/workspace/AI/tbox.ai/deep.py/task/20250505/{task_id}'
     task_path = f'/Users/wadahana/workspace/AI/tbox.ai/deep.py/task/20250505/{task_id}' 
     task_info = {
         'uid': '1234567890',
@@ -35,6 +36,7 @@ def get_task_info(task_id, task_type, video):
     return task
 
 model_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models'
+#model_path = "/home/eric/workspace/AI/sd/ComfyUI/models"
 task = get_task_info(task_id='c109d814cbcba7d8655683e5b20f6b25', task_type=TaskType.Anime, video=False)
 task_path = task.get_task_path()
 
@@ -64,11 +66,11 @@ print(f'commands: {commands_str}')
 
 err = do_exec(commands=commands)
 if err != Error.OK:
-    print(f'test live_portait fail, err: {err}')
+    print(f'test anime fail, err: {err}')
     sys.exit(1)
     
 if os.path.isfile(output_path) == False:
-    print(f'test txt2img fail, output {output_path} not exist')
+    print(f'test anime fail, output {output_path} not exist')
     sys.exit(1)
 
-print(f'test txt2img success')
+print(f'test anime success')
