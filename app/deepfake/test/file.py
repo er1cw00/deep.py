@@ -1,13 +1,13 @@
 import os
 
-MASK_DIR = '/home/eric/workspace/AI/sd/temp/mask'
+TEST_DIR = '/home/eric/workspace/AI/sd/temp/mask'
 
 def get_test_files():
     photo_list = []
     video_list = []
 
-    for subdir in os.listdir(MASK_DIR):
-        subdir_path = os.path.join(MASK_DIR, subdir)
+    for subdir in os.listdir(TEST_DIR):
+        subdir_path = os.path.join(TEST_DIR, subdir)
         if not os.path.isdir(subdir_path):
             continue
 
