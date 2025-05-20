@@ -154,7 +154,11 @@ def main(*func_args, **func_kwargs):
 
     image.save(args.output)
     
-    torch.mps.empty_cache()
+    if device == 'mps' and hasattr(torch, 'mps'):
+        torch.mps.empty_cache()
+    elif device == 'cuda' and torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
     
 if __name__ == "__main__":
     main()

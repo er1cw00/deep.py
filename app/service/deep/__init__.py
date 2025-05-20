@@ -185,7 +185,7 @@ class Deep:
         task_path = task.get_task_path()
         target_path = os.path.join(task_path, 'target.jpg')
         output_path = os.path.join(task_path, 'output.jpg')
-        anime_path = os.path.join(os.path.dirname(__file__), "comfy/anime.py")
+        anime_path = os.path.join(os.path.dirname(__file__), "comfy/anime2.py")
         device = 'CPU'
         if self.device == 'cuda':
             device = 'CUDA'

@@ -1,6 +1,7 @@
 import os
 import cv2
 import imageio
+import time
 import numpy as np
 from tqdm import tqdm
 from loguru import logger
@@ -47,9 +48,9 @@ class FaceMaskConfig(Printable):
 
 
 class FaceSwapper:
-    def __init__(self, model_path, device,  **kwargs):
+    def __init__(self, model_path, device, **kwargs):
         self.max_fps = 25
-        self.dsize = (256,256)
+        
         self.device = device
         self.model_path = model_path
                
@@ -58,8 +59,9 @@ class FaceSwapper:
         self.debug = kwargs.get('debug', False) 
         self.show_progress =  kwargs.get('show_progress', False) 
         self.mask_config = kwargs.get('mask_config', None)
-        self.max_fps = kwargs.get('max_fps', 50) 
+        self.max_fps = kwargs.get('max_fps', 25) 
         self.debug = kwargs.get('debug', False) 
+        self.dsize =  kwargs.get('dsize', (128,128)) 
         
         if self.mask_config == None:
             self.mask_config = FaceMaskConfig(bbox=True)
@@ -196,19 +198,19 @@ class FaceSwapper:
         new_frame_id = 0  # 目标视频的帧编号
         writer = get_video_writer(output_path, target_fps)
         
-        with tqdm(total=max_frame_count, desc='FaceSwap', unit='frame', disable=(not self.show_progress)) as progress:
-            while cap.isOpened() and frame_index < max_frame_count:
-                ret, target = cap.read()
-                if not ret:
-                    break
-                if new_frame_id * frame_interval <= frame_index:
-                    target_faces = self.detector.get(image=target, order='left-right')
-                    output = self.swap_face(source=source, source_face=source_face, target=target, target_faces=target_faces)
-                    writer.append_data(output[..., ::-1])
-                    new_frame_id += 1
-                    
-                frame_index += 1
-                progress.update()
+        #with tqdm(total=max_frame_count, desc='FaceSwap', unit='frame', disable=(not self.show_progress)) as progress:
+        while cap.isOpened() and frame_index < max_frame_count:
+            ret, target = cap.read()
+            if not ret:
+                break
+            if new_frame_id * frame_interval <= frame_index:
+                target_faces = self.detector.get(image=target, order='left-right')
+                output = self.swap_face(source=source, source_face=source_face, target=target, target_faces=target_faces)
+                writer.append_data(output[..., ::-1])
+                new_frame_id += 1
+                
+            frame_index += 1
+        #        progress.update()
                 
         writer.close()
         cap.release()

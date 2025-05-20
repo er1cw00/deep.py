@@ -60,7 +60,7 @@ class Scheduler:
         logger.info(f'scheule_task >>> interval: {interval}')
         await asyncio.sleep(5)
         while True:
-            #logger.debug("scheule_task run....")
+            logger.debug("scheule_task run....")
             try:
                 task = ts.get_task()
                 if task != None:
@@ -68,6 +68,7 @@ class Scheduler:
             except Exception as e:
                 logger.warning(f"Error fetching task: {e}")
                 traceback.print_exc()
+            #logger.debug("scheule_task run >>")
             await asyncio.sleep(interval)
         
 @asynccontextmanager
