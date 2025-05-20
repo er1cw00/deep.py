@@ -60,7 +60,7 @@ class Scheduler:
         logger.info(f'scheule_task >>> interval: {interval}')
         await asyncio.sleep(5)
         while True:
-            logger.debug("scheule_task run....")
+            #logger.debug("scheule_task run....")
             try:
                 task = ts.get_task()
                 if task != None:
