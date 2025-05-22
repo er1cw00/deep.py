@@ -1,3 +1,10 @@
-loguru
-boto3
-ffmpeg-python
+loguru==0.7.3
+boto3==1.35.60
+filetype==1.2.0
+scipy==1.14.1
+ffmpeg-python==0.2.0
+onnx==1.17.0
+onnxruntime-gpu==1.20.1
+tqdm==4.67.1
+imageio==2.36.1
+imageio-ffmpeg==0.5.1
