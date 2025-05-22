@@ -14,7 +14,7 @@ r2:
 name: "archlinux-3060"
 api_base: "http://192.168.3.200:9000/api/v1/conv"
 api_key: "ZDA3OTUzNDQ0MmE1Yjk0MzA0YzJmNDMxMGU3MDZkNWE="
-comfy_path: "/home/eric/workspace/AI/sd/ComfyUI"
+model_path: "/home/eric/workspace/AI/sd/ComfyUI/models"
 task_path: "/home/eric/workspace/AI/tbox.ai/data/deep/task"
 model_json: "/home/eric/workspace/AI/tbox.ai/deep.py/models.json"
 interval: 25

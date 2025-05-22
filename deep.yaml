@@ -1,6 +1,6 @@
 server:
   host: "0.0.0.0"
-  port: 8000
+  port: 7860
 log:  
   level: Debug
   path: "/Users/wadahana/workspace/AI/tbox.ai/data/deep/logs"
@@ -14,9 +14,11 @@ r2:
 name: "mac-m1-pro"
 api_base: "http://localhost:9000/api/v1/conv"
 api_key: "ZDA3OTUzNDQ0MmE1Yjk0MzA0YzJmNDMxMGU3MDZkNWE="
-comfy_path: "/Users/wadahana/workspace/AI/sd/ComfyUI"
+model_path: "/Users/wadahana/workspace/AI/sd/ComfyUI/models"
 task_path: "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task"
 model_json: "/Users/wadahana/workspace/AI/tbox.ai/deep.py/models.json"
+#mode: "pull"
+mode: "api"
 interval: 25
 proxy:
   - "http://127.0.0.1:7890"
