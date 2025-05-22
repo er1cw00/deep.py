@@ -19,7 +19,6 @@ class Scheduler:
     
     def dispatch_task(self, task):
         output = ''
-        
         task.task_state == TaskState.InProgress
         try:
             err = ts.prepare_files(task)
@@ -74,7 +73,7 @@ class Scheduler:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """启动异步后台任务"""
-    
-    scheduler = Scheduler()
-    asyncio.create_task(scheduler.scheule_task())
+    if config.get('mode', 'none') == 'pull':
+        scheduler = Scheduler()
+        asyncio.create_task(scheduler.scheule_task())
     yield

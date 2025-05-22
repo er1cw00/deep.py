@@ -1,6 +1,6 @@
 
 import os
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, PrivateAttr
 from datetime import datetime
 from app.base.config import config
@@ -90,6 +90,16 @@ class ObjectKeys(BaseModel):
     output: Optional[str] = None
 
 
+class FaceSwapConfig(BaseModel):
+    face_detect_model: str = 'yoloface'
+    face_detect_score: float = '0.5'
+    face_enhance_blend: float = 0.7
+    face_mask_box: bool = True
+    face_mask_occlusion: bool = False
+    face_mask_blur: float = 0.3
+    face_order: str = 'left-right'
+    watermark: bool = False
+    
 class TaskInfo(BaseModel):
     uid: str
     task_id: str
@@ -107,7 +117,9 @@ class TaskInfo(BaseModel):
     upscale: Optional[UpscaleTaskInfo] = None
     live_portrait: Optional[LivePortraitInfo] = None
     txt2img: Optional[Txt2ImgInfo] = None
+    watermark: Optional[bool] = False
     _task_path: str = PrivateAttr(default=None)
+    _faceswap_config: Optional[FaceSwapConfig] = None
     
     def get_task_path(self):
         if self._task_path is None:

@@ -5,6 +5,8 @@ from typing import List, Literal, Any
 
 FaceAnalyserOrder = Literal['left-right', 'right-left', 'top-bottom', 'bottom-top', 'small-large', 'large-small', 'best-worst', 'worst-best']
 
+face_analyser_orders : List[FaceAnalyserOrder] = [ 'left-right', 'right-left', 'top-bottom', 'bottom-top', 'small-large', 'large-small', 'best-worst', 'worst-best' ]
+
 import numpy as np
 from numpy.linalg import norm as l2norm
 #from easydict import EasyDict

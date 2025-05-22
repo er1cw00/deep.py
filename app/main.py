@@ -39,4 +39,4 @@ server_port = config.get('server.port')
 
 logger.info(f'Server running at http://{server_host}:{server_port}')
 
-uvicorn.run(app, host=server_host, port=server_port,loop="asyncio", log_config=None, log_level="info")
+uvicorn.run(app, host=server_host, port=server_port,loop="asyncio", timeout_keep_alive=30, log_level="info", access_log=False)

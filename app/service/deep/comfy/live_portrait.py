@@ -15,7 +15,6 @@ from app.deepfake.live_portrait.human_pipeline import HumanPipeline
 
 # from app.service.deep.utils import add_tbox_path_to_sys_path, add_comfy_path_to_sys_path
 
-        
 
 parser = argparse.ArgumentParser(
     description="A converted ComfyUI workflow. Required inputs listed below. Values passed should be valid JSON (assumes string if not valid JSON)."

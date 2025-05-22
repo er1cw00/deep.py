@@ -11,18 +11,17 @@ from app.base.error import Error
 
 from app.service.deep.rmbg import RMBG
 from app.service.deep.faceswap import FaceSwapper, FaceMaskConfig
-from app.service.deep.utils import add_tbox_path_to_sys_path, add_comfy_path_to_sys_path
+#from app.service.deep.utils import add_tbox_path_to_sys_path, add_comfy_path_to_sys_path
 
 class Deep:
     def __init__(self):        
         self._swapper = None
         self._rmbg = None
         
-        self.comfy_path = None
-        self.tbox_path = None
+        self.model_path = None
         self.ckpt_list = {}
         self.lora_list = {}
-            
+        
     def init(self):
         if torch.cuda.is_available():
             self.device = "cuda"
@@ -33,27 +32,15 @@ class Deep:
         else:
             self.device = "cpu"
 
-        self.comfy_path = config.get('comfy_path')
-        self.tbox_path = os.path.join(self.comfy_path, "custom_nodes/ComfyUI-tbox/src")
-        if not os.path.exists(self.comfy_path):
-            logger.error(f"ComfyUI path not found: {self.comfy_path}")
-            return False
-        if not os.path.exists(self.tbox_path):
-            logger.error(f"ComfyUI tbox path not found: {self.tbox_path}")
+        self.model_path = config.get('model_path')
+        if not os.path.isdir(self.model_path):
+            logger.error(f"models path not exist: {self.model_path}")
             return False
         
-        logger.info(f"ComfyUI Path: {self.comfy_path}")
-        logger.info(f"ComfyUI tbox Path: {self.tbox_path}")
-        logger.info(f"Device: {self.device}")
-        # Add paths to sys.path
-        add_comfy_path_to_sys_path(self.comfy_path)
-        add_tbox_path_to_sys_path(self.tbox_path)
-        
+        logger.info(f"model path: {self.model_path}")
+        logger.info(f"device: {self.device}")
+
         self.load_ckpt()
-        
-        import folder_paths
-        self.model_path = folder_paths.models_dir
-        logger.info(f"Model Path: {self.model_path}")
         
     def load_ckpt(self):
         path = os.path.join(config.get('model_json'))
@@ -102,6 +89,7 @@ class Deep:
                                 device=self.device, 
                                 mask_config=mask_config,
                                 show_progress=True)
+            
         return self._swapper.process(task)
     
     def faceswap(self, task):

@@ -26,6 +26,10 @@ from app.deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_
 from app.base.error import Error
 from app.deepfake.utils import get_providers_from_device, get_video_writer, restore_audio
 
+# 1. fps>25fps
+# 2. fps < 25fps
+# 3. duration > 20s  vip
+# 4. duration > 20s  free
 # mask_cfg = FaceMaskConfig()
 # mask_cfg.bbox = True
         # mask_cfg.bbox_blur = 0.3
@@ -156,7 +160,7 @@ class FaceSwapper:
         target_faces =  self.detector.get(image=target, order='left-right')
         
         output = self.swap_face(source, source_face, target=target, target_faces=target_faces)
-        cv2.imwrite(output_path, output)
+        cv2.imwrite(output_path, output, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
         
         return output_path, Error.OK
         
@@ -198,19 +202,20 @@ class FaceSwapper:
         new_frame_id = 0  # 目标视频的帧编号
         writer = get_video_writer(output_path, target_fps)
         
-        #with tqdm(total=max_frame_count, desc='FaceSwap', unit='frame', disable=(not self.show_progress)) as progress:
-        while cap.isOpened() and frame_index < max_frame_count:
-            ret, target = cap.read()
-            if not ret:
-                break
-            if new_frame_id * frame_interval <= frame_index:
-                target_faces = self.detector.get(image=target, order='left-right')
-                output = self.swap_face(source=source, source_face=source_face, target=target, target_faces=target_faces)
-                writer.append_data(output[..., ::-1])
-                new_frame_id += 1
+        with tqdm(total=int(max_frame_count / frame_interval), desc='FaceSwap', unit='frame', disable=(not self.show_progress)) as progress:
+            while cap.isOpened() and frame_index < max_frame_count:
+                ret, target = cap.read()
+                if not ret:
+                    break
+                if new_frame_id * frame_interval <= frame_index:
+                    target_faces = self.detector.get(image=target, order='left-right')
+                    output = self.swap_face(source=source, source_face=source_face, target=target, target_faces=target_faces)
+                    writer.append_data(output[..., ::-1])
+                    new_frame_id += 1
+                    progress.update()
+                    
+                frame_index += 1
                 
-            frame_index += 1
-        #        progress.update()
                 
         writer.close()
         cap.release()
@@ -257,7 +262,7 @@ class FaceSwapper:
             return "", Error.NoFace
         
         output = self.restore_face(target, face_list)
-        cv2.imwrite(output_path, output)
+        cv2.imwrite(output_path, output, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
         return output_path, Error.OK
     
     def enhance_video(self, task):
