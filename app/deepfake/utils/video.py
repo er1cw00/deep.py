@@ -28,7 +28,6 @@ def restore_audio(target_path, output_path, duration):
             'c': 'copy',
             'loglevel': 'quiet'
         }
-        print(f'duration: {duration}')
         if duration is not None:
             input_video = ffmpeg.input(temp_path, ss=0, to=duration)
             input_audio = ffmpeg.input(target_path, ss=0, to=duration)

@@ -30,6 +30,7 @@ from app.deepfake.utils import get_providers_from_device, get_video_writer, rest
 # 2. fps < 25fps
 # 3. duration > 20s  vip
 # 4. duration > 20s  free
+
 # mask_cfg = FaceMaskConfig()
 # mask_cfg.bbox = True
         # mask_cfg.bbox_blur = 0.3
@@ -202,8 +203,8 @@ class FaceSwapper:
         new_frame_id = 0  # 目标视频的帧编号
         writer = get_video_writer(output_path, target_fps)
         
-        with tqdm(total=int(max_frame_count / frame_interval), desc='FaceSwap', unit='frame', disable=(not self.show_progress)) as progress:
-            while cap.isOpened() and frame_index < max_frame_count:
+        with tqdm(total=int(max_frame_count), desc='FaceSwap', unit='frame', disable=(not self.show_progress)) as progress:
+            while cap.isOpened() and new_frame_id < max_frame_count:
                 ret, target = cap.read()
                 if not ret:
                     break
@@ -215,8 +216,8 @@ class FaceSwapper:
                     progress.update()
                     
                 frame_index += 1
-                
-                
+                    
+        print(f'read:{frame_index}, process: {new_frame_id}')
         writer.close()
         cap.release()
        
