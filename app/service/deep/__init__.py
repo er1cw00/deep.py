@@ -88,7 +88,7 @@ class Deep:
             self._swapper = FaceSwapper(model_path=model_path,
                                 device=self.device, 
                                 mask_config=mask_config,
-                                show_progress=True)
+                                show_progress=False)
             
         return self._swapper.process(task)
     
