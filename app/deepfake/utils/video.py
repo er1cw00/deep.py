@@ -56,7 +56,7 @@ def get_video_writer(output_path, fps):
     pixelformat         = 'yuv420p'  # video pixel format
     image_mode          = 'rbg'
     macro_block_size    = 2
-    ffmpeg_params       = ['-crf', '22', '-preset', 'medium', '-tag:v', 'hvc1', '-loglevel', 'quiet']
+    ffmpeg_params       = ['-crf', '22', '-preset', 'fast', '-tag:v', 'hvc1', '-loglevel', 'quiet']
     
     writer = imageio.get_writer(uri=output_path,
                         format=video_format,

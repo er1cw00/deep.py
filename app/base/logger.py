@@ -28,7 +28,7 @@ def logger_init():
     env = config.get('env')
             
     if not os.path.exists(log_path):
-        os.makedirs(log_path,exist_ok=True)
+        os.makedirs(log_path, exist_ok=True)
         print(f"创建日志目录: {log_path}")
     
     current_time = datetime.now().strftime("%Y%m%d0000")
