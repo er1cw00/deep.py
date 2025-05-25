@@ -25,6 +25,7 @@ class UniFace:
         self.mean = [ 0.5, 0.5, 0.5 ]
         self.standard_deviation = [ 0.5, 0.5, 0.5 ]
         self.session  = onnxruntime.InferenceSession(model_path, providers=providers)
+        print(f'Occluder providers:{providers}; current providers: {self.session.get_providers()}') 
         inputs = self.session.get_inputs()
         for input in inputs:
             print(f'input: {input.name}, shape: {input.shape}')

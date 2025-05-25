@@ -11,8 +11,9 @@ class RetinaFace:
     def __init__(self, model_path, providers, threshold=0.5):
         self.threshold = threshold
         self.session = onnxruntime.InferenceSession(model_path, providers=providers)
+        print(f'RetinaFace providers:{providers}; current providers: {self.session.get_providers()}') 
         inputs = self.session.get_inputs()
-        print(f'RetinaFace >> input name: {inputs[0].name}, shape: {inputs[0].shape}')
+        #print(f'RetinaFace >> input name: {inputs[0].name}, shape: {inputs[0].shape}')
         self.input_size = (640, 640) #(inputs[0].shape[2], inputs[0].shape[3]) # HWC
         self.input_name = inputs[0].name
         

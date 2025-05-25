@@ -11,6 +11,7 @@ from app.deepfake.facefusion.utils.affine import arcface_112_v2, warp_face_by_la
 class ArcFaceW600k:
     def __init__(self, model_path, providers):
         self.session  = onnxruntime.InferenceSession(model_path, providers=providers)
+        print(f'ArcFaceW600k providers:{providers}; current providers: {self.session.get_providers()}') 
         inputs = self.session.get_inputs()
         self.input_size = (inputs[0].shape[2], inputs[0].shape[3])
         self.input_name = inputs[0].name

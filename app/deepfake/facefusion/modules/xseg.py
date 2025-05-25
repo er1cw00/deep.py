@@ -11,8 +11,7 @@ class XSeg:
     def __init__(self, model_path, providers):
         
         self.session  = onnxruntime.InferenceSession(model_path, providers=providers)
-        print(f'current providers: {self.session.get_providers()}') 
-        print(f"available  providers: {onnxruntime.get_available_providers()}")
+        print(f'XSeg providers:{providers}; current providers: {self.session.get_providers()}') 
         inputs = self.session.get_inputs()
         for input in inputs:
             print(f'inputs name: {input.name}, shape: {input.shape}')

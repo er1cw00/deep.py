@@ -11,8 +11,9 @@ from app.deepfake.facefusion.utils.mask import FaceMaskRegionMap, FaceMaskAllReg
 class Resnet34:
     def __init__(self, model_path, providers):
         self.session  = onnxruntime.InferenceSession(model_path, providers=providers)
+        print(f'Resnet34 providers:{providers}; current providers: {self.session.get_providers()}') 
         inputs = self.session.get_inputs()
-        print(f'inputs[0].shape: {inputs[0].shape}')
+#        print(f'inputs[0].shape: {inputs[0].shape}')
         self.input_size = (inputs[0].shape[2], inputs[0].shape[3])
         self.input_name = inputs[0].name
         self.affine = False

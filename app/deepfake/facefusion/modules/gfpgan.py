@@ -11,6 +11,7 @@ import onnxruntime
 class GFPGAN:
     def __init__(self, model_path, providers):
         self.session  = onnxruntime.InferenceSession(model_path, providers=providers)
+        print(f'gfpgan providers:{providers}; current providers: {self.session.get_providers()}') 
         inputs = self.session.get_inputs()
         for input in inputs:
             if input.name == 'input':
@@ -64,6 +65,7 @@ if __name__ == "__main__":
         return output
 
     def get_video_writer(outout_path, fps):
+        
         video_format = 'mp4'     # default is mp4 format
         codec = 'libx264'        # default is libx264 encoding
         #quality = quality        # video quality

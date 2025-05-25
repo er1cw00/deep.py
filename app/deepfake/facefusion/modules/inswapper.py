@@ -16,6 +16,7 @@ class InSwapper:
         self.standard_deviation = [ 1.0, 1.0, 1.0 ]
         self.model_path = model_path
         self.session  = onnxruntime.InferenceSession(model_path, providers=providers)
+        print(f'Inswapper providers:{providers}; current providers: {self.session.get_providers()}') 
         inputs = self.session.get_inputs()
         for input in inputs:
             #print(f'InSwapperinput: {input.name}, shape: {input.shape}')

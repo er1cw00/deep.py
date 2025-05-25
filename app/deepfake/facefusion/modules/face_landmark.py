@@ -12,6 +12,7 @@ from app.deepfake.facefusion.utils.affine import warp_face_by_translation
 class FaceLandmark_2dFan:
     def __init__(self, model_path, providers):
         self.session  = onnxruntime.InferenceSession(model_path, providers=providers)
+        print(f'2dFan providers:{providers}; current providers: {self.session.get_providers()}') 
         inputs = self.session.get_inputs()
         for input in inputs:
             #print(f'input name: {input.name}, shape: {input.shape}')
