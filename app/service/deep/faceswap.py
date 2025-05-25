@@ -180,7 +180,7 @@ class FaceSwapper:
         total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))  # 获取视频宽度
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))  # 获取视频高度
-        
+
         source_face, err = self.get_source_face(image=source)
         if err != Error.OK:
             return "", Error.NoFace
@@ -196,7 +196,7 @@ class FaceSwapper:
                 max_frame_count = count
                 trim_duration = task.trim_duration
             
-        
+        logger.info(f'resolution: {width}x{height}@{fps}')
         logger.info(f"task: {task.task_id}, total: {total}, target_fps: {target_fps}, max_frame_count: {max_frame_count}, trim_duration: {trim_duration}, frame_interval: {frame_interval}")
         
         frame_index = 0

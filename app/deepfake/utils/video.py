@@ -4,6 +4,7 @@ import imageio
 import ffmpeg
 from loguru import logger
 from app.base.error import Error
+from app.base.config import config
 
 def has_audio(input_path):
     try:
@@ -50,6 +51,10 @@ def restore_audio(target_path, output_path, duration):
     
     
 def get_video_writer(output_path, fps):
+    codec = config.get('video_codec')
+    if codec not in ['libx264', 'libx265', 'hevc_nvenc', 'h264_nvenc']:
+        codec = 'libx265'
+    print(f'codec: {codec}') 
     video_format        = 'mp4'     # default is mp4 format
     codec               = 'libx265'        # default is libx264 encoding
     #quality            = quality        # video quality
