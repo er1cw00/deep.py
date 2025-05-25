@@ -20,6 +20,8 @@ model_json: "/Users/wadahana/workspace/AI/tbox.ai/deep.py/models.json"
 #mode: "pull"
 mode: "api"
 interval: 25
+#video_codec: "hevc_nvenc"
+video_codec: "libx265"
 proxy:
   - "http://127.0.0.1:7890"
   - "http://192.168.1.2:8082"
