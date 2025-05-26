@@ -104,7 +104,7 @@ class FaceSwapRequest(BaseModel):
             config.face_mask_box = True
         if 'occlusion' in self.face_mask_types:
             config.face_mask_occlusion = True
-        if self.face_mask_blur >0 and self.face_mask_blur <= 1:
+        if self.face_mask_blur > 0 and self.face_mask_blur <= 1:
             config.face_mask_blur = self.face_mask_blur
         
         task = TaskInfo(

@@ -37,7 +37,7 @@ def restore_audio(target_path, output_path, duration):
             input_audio = ffmpeg.input(target_path)
             
         o = ffmpeg.output(input_video['v:0'], input_audio['a:0?'], output_path, **kwargs).global_args('-hide_banner') 
-        print(f"ffmpeg output: {o.compile()}")
+        #print(f"ffmpeg output: {o.compile()}")
         o.run(overwrite_output=True)
         os.remove(temp_path)
     except ffmpeg.Error as e:
@@ -51,10 +51,10 @@ def restore_audio(target_path, output_path, duration):
     
     
 def get_video_writer(output_path, fps):
-    codec = config.get('video_codec')
+    codec = config.get('video_codec', 'libx265')
     if codec not in ['libx264', 'libx265', 'hevc_nvenc', 'h264_nvenc']:
         codec = 'libx265'
-    print(f'codec: {codec}') 
+    logger.info(f'video codec: {codec}') 
     video_format        = 'mp4'     # default is mp4 format
     codec               = 'libx265'        # default is libx264 encoding
     #quality            = quality        # video quality

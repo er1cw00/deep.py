@@ -10,7 +10,7 @@ from app.base.config import config
 from app.base.error import Error
 
 from app.service.deep.rmbg import RMBG
-from app.service.deep.faceswap import FaceSwapper, FaceMaskConfig
+from app.service.deep.faceswap import FaceSwapper#, FaceMaskConfig
 #from app.service.deep.utils import add_tbox_path_to_sys_path, add_comfy_path_to_sys_path
 
 class Deep:
@@ -79,15 +79,17 @@ class Deep:
     
     def do_faceswap(self, task):
         if self._swapper == None:
-            mask_config = FaceMaskConfig(
-                bbox=True,
-                bbox_blur=0.3,
-                occlusion=True,
-            )
+            
+            # mask_config = FaceMaskConfig(
+            #     bbox=True,
+            #     bbox_blur=0.3,
+            #     occlusion=True,
+            # )
             model_path = os.path.join(self.model_path, 'facefusion')
             self._swapper = FaceSwapper(model_path=model_path,
                                 device=self.device, 
-                                mask_config=mask_config,
+                                mask_bbox=True,
+                                mask_occlusion=True,
                                 show_progress=False)
             
         return self._swapper.process(task)

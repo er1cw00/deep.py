@@ -24,7 +24,7 @@ from app.deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_
 
 
 from app.base.error import Error
-from app.deepfake.utils import get_providers_from_device, get_video_writer, restore_audio
+from app.deepfake.utils import Timer, get_providers_from_device, get_video_writer, restore_audio
 
 # 1. fps>25fps
 # 2. fps < 25fps
@@ -43,33 +43,41 @@ from app.deepfake.utils import get_providers_from_device, get_video_writer, rest
         # self.masker = FaceMasker(mask_cfg)
 
 @dataclass(repr=False)  # use repr from Printable
-class FaceMaskConfig(Printable):
-    bbox: bool = True
-    occlusion: bool = False
-    region: bool = False
-    bbox_blur: float = 0.3
-    bbox_padding: Tuple[int, int, int, int] = (0,0,0,0)
+class FaceSwapConfig(Printable):
+    face_detect_model: str = 'yoloface'
+    face_detect_score: float = '0.5'
+    face_enhance_blend: float = 0.7
+    face_order: str = 'left-right'
+    watermark: bool = False
+    mask_bbox: bool = True
+    mask_occlusion: bool = False
+    mask_region: bool = False
+    mask_bbox_blur: float = 0.3
+    mask_bbox_padding: Tuple[int, int, int, int] = (0,0,0,0)
     region_list: List[FaceMaskRegion] = field( default_factory=lambda: FaceMaskAllRegion.copy() )
 
 
 class FaceSwapper:
     def __init__(self, model_path, device, **kwargs):
-        self.max_fps = 25
-        
-        self.device = device
+       
+        self.device     = device
         self.model_path = model_path
-               
+      
         self.landmark_threshold = kwargs.get('landmark_threshold', 0.5) 
         self.enhance_blend = kwargs.get('enhance_blend', 0.8) 
         self.debug = kwargs.get('debug', False) 
-        self.show_progress =  kwargs.get('show_progress', False) 
-        self.mask_config = kwargs.get('mask_config', None)
+        self.show_progress = kwargs.get('show_progress', False) 
         self.max_fps = kwargs.get('max_fps', 25) 
         self.debug = kwargs.get('debug', False) 
         self.dsize =  kwargs.get('dsize', (128,128)) 
         
-        if self.mask_config == None:
-            self.mask_config = FaceMaskConfig(bbox=True)
+        self.mask_bbox = kwargs.get('mask_bbox', True)
+        self.mask_occlusion = kwargs.get('mask_occlusion', True)
+        self.mask_region = False
+
+        self.task_config = FaceSwapConfig(mask_bbox=self.mask_bbox, 
+                                          mask_occlusion=self.mask_occlusion,
+                                          mask_region=self.mask_region)
             
         self.load()
         
@@ -90,9 +98,9 @@ class FaceSwapper:
         self.swapper    = InSwapper(model_path=inswapper_path, providers=providers)
         self.enhancer   = GFPGAN(model_path=gfpgan_path, providers=providers)
 
-        if self.mask_config.occlusion == True:
+        if self.mask_occlusion == True:
             self.occluder = Occluder(model_path=occluder_path, providers=providers)
-        if self.mask_config.region == True:
+        if self.mask_region == True:
             self.resnet = Resnet34(model_path=resnet_path, providers=providers)
     
     def get_source_face(self, image):
@@ -118,19 +126,29 @@ class FaceSwapper:
     
     def create_mask(self, crop_face):
         mask_list = []
-        if self.mask_config.bbox == True:
-            bbox_mask = create_bbox_mask(crop_face.shape[:2][::-1], self.mask_config.bbox_blur, self.mask_config.bbox_padding)
+        if self.mask_bbox == True and self.task_config.mask_bbox:
+            bbox_mask = create_bbox_mask(crop_face.shape[:2][::-1], self.task_config.mask_bbox_blur, self.task_config.mask_bbox_padding)
             mask_list.append(bbox_mask)
-        if self.mask_config.occlusion == True:
+        if self.mask_occlusion == True and self.task_config.mask_occlusion == True:
             occlusion_mask = self.occluder.detect(image=crop_face)
             mask_list.append(occlusion_mask)
-        if self.mask_config.region == True:
-            region_mask = self.resnet.detect(crop_face, self.mask_config.region_list)
+        if self.mask_region == True and self.task_config.mask_region == True:
+            region_mask = self.resnet.detect(crop_face, self.task_config.region_list)
             mask_list.append(region_mask)
         crop_mask = np.minimum.reduce(mask_list).clip(0, 1)  
         return crop_mask
     
+    def apply_task_config(self, config):
+        if config is None:
+            return 
+        
+        if self.mask_occlusion:
+            if config.face_mask_occlusion is not None:
+                self.task_config.mask_occlusion = config.face_mask_occlusion
+        
     def process(self, task):
+        self.apply_task_config(task._faceswap_config)
+
         if task.task_type == TaskType.FaceRestore:
             if task.video:
                 return self.enhance_video(task)
@@ -143,6 +161,8 @@ class FaceSwapper:
                 return self.swap_image(task)
     
     def swap_image(self, task):
+        timer = Timer()
+        timer.tic()
         task_path = task.get_task_path()
         source_path = os.path.join(task_path, 'source.jpg')
         target_path = os.path.join(task_path, 'target.jpg')
@@ -162,10 +182,13 @@ class FaceSwapper:
         
         output = self.swap_face(source, source_face, target=target, target_faces=target_faces)
         cv2.imwrite(output_path, output, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
-        
+        timer.toc()
+        timer.show(f'photo swap ({task.task_id})')
         return output_path, Error.OK
         
     def swap_video(self, task):
+        timer = Timer()
+        timer.tic()
         task_path = task.get_task_path()
         source_path = os.path.join(task_path, 'source.jpg')
         target_path = os.path.join(task_path, 'target.mp4')
@@ -196,8 +219,7 @@ class FaceSwapper:
                 max_frame_count = count
                 trim_duration = task.trim_duration
             
-        logger.info(f'resolution: {width}x{height}@{fps}')
-        logger.info(f"task: {task.task_id}, total: {total}, target_fps: {target_fps}, max_frame_count: {max_frame_count}, trim_duration: {trim_duration}, frame_interval: {frame_interval}")
+        logger.info(f"task({task.task_id}), res({width}x{height}@{fps}), target_fps({target_fps}), total({total}) max_frame_count({max_frame_count}), trim_duration({trim_duration}), frame_interval({frame_interval})")
         
         frame_index = 0
         new_frame_id = 0  # 目标视频的帧编号
@@ -217,11 +239,12 @@ class FaceSwapper:
                     
                 frame_index += 1
                     
-        print(f'read:{frame_index}, process: {new_frame_id}')
         writer.close()
         cap.release()
        
         err = restore_audio(target_path, output_path, trim_duration)
+        timer.toc()
+        timer.show(f'vide swap frames({new_frame_id})')
         return output_path, err 
         
     def swap_face(self, source, source_face, target, target_faces):
