@@ -14,6 +14,8 @@ from app.service.deep import deep
 from app.routes import routes_init
 
 
+
+os.environ['OMP_NUM_THREADS'] = '1'
 os.environ["AWS_EC2_METADATA_DISABLED"] = "true"
 
 ## init config
