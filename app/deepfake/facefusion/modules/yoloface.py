@@ -11,7 +11,6 @@ class YoloFace:
     def __init__(self, model_path, providers, threshold=0.5):
         self.threshold = threshold
         self.session = onnxruntime.InferenceSession(model_path, providers=providers)
-        print(f'YoloFace providers:{providers}; current providers: {self.session.get_providers()}') 
         inputs = self.session.get_inputs()
         self.input_size = (inputs[0].shape[2], inputs[0].shape[3])
         self.input_name = inputs[0].name

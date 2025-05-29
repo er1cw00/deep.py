@@ -51,12 +51,9 @@ def restore_audio(target_path, output_path, duration):
     
     
 def get_video_writer(output_path, fps):
-    codec = config.get('video_codec', 'libx265')
-    if codec not in ['libx264', 'libx265', 'hevc_nvenc', 'h264_nvenc']:
-        codec = 'libx265'
-    logger.info(f'video codec: {codec}') 
+    codec = config.get_video_codec()
     video_format        = 'mp4'     # default is mp4 format
-    codec               = 'libx265'        # default is libx264 encoding
+    codec               = config.get_video_codec()        # default is libx264 encoding
     #quality            = quality        # video quality
     pixelformat         = 'yuv420p'  # video pixel format
     image_mode          = 'rbg'
