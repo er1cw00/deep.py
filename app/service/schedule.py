@@ -71,7 +71,9 @@ class Scheduler:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """启动异步后台任务"""
-    if config.get('mode', 'none') == 'pull':
+    mode = config.get('deep.mode', 'none')
+    logger.info(f'schedule mode: {mode}')
+    if mode == 'pull':
         scheduler = Scheduler()
         asyncio.create_task(scheduler.scheule_task())
     yield

@@ -21,17 +21,22 @@ def ensure_dir(directory: str):
         return False  # 失败返回 False
 
 class TaskService:
+    
     def __init__(self):
         pass
-    def init(self):
-        self.env        = config.get('env')
-        self.api_base   = config.get('api_base')
-        self.api_key    = config.get('api_key')
-        self.node_name  = config.get('name')
-        self.path       = config.get("task_path")
-        logger.info(f"TaskService start >>")
     
+    def init(self):
+        self.api_key    = 'api-'+config.get('app_key')
+        self.env        = config.get('env')
+        self.node_name  = config.get('name')
+        self.api_base   = config.get('deep.api_base')
+        self.path       = config.get('deep.task_path')
+        self.types      = config.get('deep.task_type')
+        task_types = {'comfy', 'faceswap'}
+        self.types = [t for t in self.types if t in task_types] # 过滤只保留 'comfy' 和 'faceswap'
         
+        logger.info(f"TaskService start >> env({self.env}), node({self.node_name}), types({self.types})")
+
     def get_task(self):
         count = 0 
         if self.env == 'pro':

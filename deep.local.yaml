@@ -11,17 +11,20 @@ r2:
   access_key: "c26f8c9908ed565b0947e09e311b4701"
   access_secret: "d717c8cfcb2198090d47c18c7c1795f3bbe82756d1ba976e7e0294edfa43e0d1"
   api_base: "https://tbox-dev.shizuka-ai-2k.workers.dev"
+deep:
+  mode: "pull"
+  api_base: "http://localhost:9000/api/v1/conv"
+  task_path: "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task"
+  task_type:
+    - comfy
+    - faceswap
+  model_path: "/Users/wadahana/workspace/AI/sd/ComfyUI/models"
+  model_json: "/Users/wadahana/workspace/AI/tbox.ai/deep.py/models.json"
+  vcodec: libx265
+  interval: 20
+env: "dev"
 name: "mac-m1-pro"
-api_base: "http://localhost:9000/api/v1/conv"
-api_key: "ZDA3OTUzNDQ0MmE1Yjk0MzA0YzJmNDMxMGU3MDZkNWE="
-model_path: "/Users/wadahana/workspace/AI/sd/ComfyUI/models"
-task_path: "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task"
-model_json: "/Users/wadahana/workspace/AI/tbox.ai/deep.py/models.json"
-#mode: "pull"
-mode: "api"
-interval: 25
-#video_codec: "hevc_nvenc"
-video_codec: "libx265"
+app_key: "ZDA3OTUzNDQ0MmE1Yjk0MzA0YzJmNDMxMGU3MDZkNWE="
 proxy:
   - "http://127.0.0.1:7890"
   - "http://192.168.1.2:8082"

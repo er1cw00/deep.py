@@ -32,7 +32,7 @@ class Deep:
         else:
             self.device = "cpu"
 
-        self.model_path = config.get('model_path')
+        self.model_path = config.get('deep.model_path')
         if not os.path.isdir(self.model_path):
             logger.error(f"models path not exist: {self.model_path}")
             return False
@@ -43,7 +43,7 @@ class Deep:
         self.load_ckpt()
         
     def load_ckpt(self):
-        path = os.path.join(config.get('model_json'))
+        path = os.path.join(config.get('deep.model_json'))
         with open(path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         self.ckpt_map = {item['name']: item for item in data.get('checkpoint', [])}
