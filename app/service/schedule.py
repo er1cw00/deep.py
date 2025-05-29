@@ -15,8 +15,9 @@ from app.service.deep import deep
 
 class Scheduler:
     def __init__(self):
-        logger.info(f'scheduler init >> ')
-    
+        self.interval = config.get('deep.interval', 5)
+        logger.info(f'scheduler init >> interval({self.interval})')
+        
     def dispatch_task(self, task):
         output = ''
         task.task_state == TaskState.InProgress
@@ -25,7 +26,7 @@ class Scheduler:
             if err != Error.OK:
                 logger.error(f'dispatch_task >> prepare files for task({task.task_id}) fail, err: {err}')
             else:
-                if task.task_type == TaskType.FaceSwap:
+                if task.task_type == TaskType.FaceSwap2:
                     output, err = deep.faceswap(task)
                 elif task.task_type == TaskType.Rmbg:
                     output, err = deep.rmbg(task)
@@ -55,11 +56,9 @@ class Scheduler:
        
     async def scheule_task(self):
         """异步后台任务：定期拉取数据"""
-        interval = config.get('interval', 5)
-        logger.info(f'scheule_task >>> interval: {interval}')
+        logger.info(f'scheule_task >>> ')
         await asyncio.sleep(5)
         while True:
-            #logger.debug("scheule_task run....")
             try:
                 task = ts.get_task()
                 if task != None:
@@ -67,8 +66,7 @@ class Scheduler:
             except Exception as e:
                 logger.warning(f"Error fetching task: {e}")
                 traceback.print_exc()
-            #logger.debug("scheule_task run >>")
-            await asyncio.sleep(interval)
+            await asyncio.sleep(self.interval)
         
 @asynccontextmanager
 async def lifespan(app: FastAPI):

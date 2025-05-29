@@ -64,27 +64,9 @@ class Deep:
         lora = self.lora_map.get(name, self.lora_map.get('FilmVelvia3'))
         return lora['model'], lora['clip_skip']
     
-    def reset(self, task_type):
-        pass
-        # if task_type == TaskType.Rmbg:
-        #    self._restore = None
-        # elif task_type == TaskType.FaceRestore or :
-        #     self._rmbg = None
-        # else:
-        #     self._rmbg = None
-        # if self.device == 'cuda':
-        #     torch.cuda.empty_cache() 
-        #     torch.cuda.ipc_collect()
-        
-    
     def do_faceswap(self, task):
         if self._swapper == None:
-            
-            # mask_config = FaceMaskConfig(
-            #     bbox=True,
-            #     bbox_blur=0.3,
-            #     occlusion=True,
-            # )
+
             model_path = os.path.join(self.model_path, 'facefusion')
             self._swapper = FaceSwapper(model_path=model_path,
                                 device=self.device, 
@@ -95,15 +77,12 @@ class Deep:
         return self._swapper.process(task)
     
     def faceswap(self, task):
-        self.reset(TaskType.FaceSwap)
         return self.do_faceswap(task)
     
     def restore(self, task):
-        self.reset(TaskType.FaceRestore)
         return self.do_faceswap(task)
     
     def rmbg(self, task):
-        self.reset(TaskType.Rmbg)
         if self._rmbg == None:
             model_path = os.path.join(self.model_path, 'bria')
             self._rmbg = RMBG(model_path=model_path, device=self.device)

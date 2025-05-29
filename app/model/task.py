@@ -17,7 +17,7 @@ class TaskType:
     Txt2Img         = 1004              # 原TaskTxt2Img
     FaceRestore     = 1005              # 原TaskFaceRestore
     RedrawBg        = 1006              # 原TaskRedrawBG（BG按驼峰处理为Bg）
-    FaceSwap        = 1007              # 原TaskFaceSwap
+    FaceSwap2       = 1007              # 原TaskFaceSwap
     MaxComfyTask    = 1007              # 范围标记保持原名
 
 def get_task_type_name(t):
@@ -35,8 +35,8 @@ def get_task_type_name(t):
         return 'txt2img'
     elif t == TaskType.FaceRestore: 
         return 'facerestore'
-    elif t == TaskType.FaceSwap: 
-        return 'faceswap'
+    elif t == TaskType.FaceSwap2: 
+        return 'faceswap2'
     return 'unknonw'
     
 class TaskState:

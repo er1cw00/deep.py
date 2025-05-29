@@ -154,7 +154,7 @@ class FaceSwapper:
                 return self.enhance_video(task)
             else:
                 return self.enhance_image(task)
-        elif task.task_type == TaskType.FaceSwap:
+        elif task.task_type == TaskType.FaceSwap2:
             if task.video:
                 return self.swap_video(task)
             else:
@@ -169,7 +169,6 @@ class FaceSwapper:
         output_path = os.path.join(task_path, 'output.jpg')
         source = cv2.imread(source_path)
         target = cv2.imread(target_path)
-        print(f'source_path: {source_path}')
         
         if source is None or target is None:
             return "", Error.NoFace 
@@ -183,7 +182,7 @@ class FaceSwapper:
         output = self.swap_face(source, source_face, target=target, target_faces=target_faces)
         cv2.imwrite(output_path, output, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
         timer.toc()
-        timer.show(f'photo swap ({task.task_id})')
+        logger.info(f'task({task.task_id}) photo swap cost({timer.total_time:.3f}s)')
         return output_path, Error.OK
         
     def swap_video(self, task):
@@ -244,7 +243,7 @@ class FaceSwapper:
        
         err = restore_audio(target_path, output_path, trim_duration)
         timer.toc()
-        timer.show(f'vide swap frames({new_frame_id})')
+        logger.info(f'task({task.task_id}) video swap frames({new_frame_id}) cost({timer.total_time:.3f}s)')
         return output_path, err 
         
     def swap_face(self, source, source_face, target, target_faces):

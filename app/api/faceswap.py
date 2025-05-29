@@ -23,7 +23,7 @@ async def ping():
 
 @router.post("/facefusion/frame_process", response_model=FaceSwapResponse)
 async def frame_process(req: FaceSwapRequest):
-    print('req:' + json.dumps(req.model_dump()))
+    logger.debug('req:' + json.dumps(req.model_dump()))
     task, message = req.toTaskInfo()
     if task is None:
         return JSONResponse(
@@ -33,7 +33,7 @@ async def frame_process(req: FaceSwapRequest):
     output = ""
     task.task_state = TaskState.InProgress
     try:
-        if task.task_type == TaskType.FaceSwap:
+        if task.task_type == TaskType.FaceSwap2:
             output, err = deep.faceswap(task)
         if err == Error.OK:
             task.task_state = TaskState.Success

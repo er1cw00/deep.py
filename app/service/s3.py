@@ -179,9 +179,7 @@ class S3:
             err = Error.Unknown
         
         return '', '', err
-    
-
- 
+     
     def do_del_object(self, client, obj_key):
         pass
   
