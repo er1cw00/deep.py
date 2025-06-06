@@ -1,3 +1,4 @@
+import torch
 
 def get_providers_from_device(device):
     providers = ['CPUExecutionProvider']
@@ -16,5 +17,11 @@ def check_device(device):
             device = "mps"
         else:
             print(f'deivce ({device}) unsupport, fallback to CPU')
+            device = 'cpu'
+    if device == 'cuda':
+        if not torch.cuda.is_available() :
+            device = 'cpu'
+    if device == 'mps':
+        if not torch.backends.mps.is_available():
             device = 'cpu'
     return device

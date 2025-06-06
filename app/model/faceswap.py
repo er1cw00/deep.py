@@ -110,7 +110,7 @@ class FaceSwapRequest(BaseModel):
         task = TaskInfo(
             uid             = 'tg_6412449819',
             task_id         = task_id,
-            task_type       = TaskType.FaceSwap,  # 假设1代表换脸任务
+            task_type       = TaskType.FaceSwap2,  # 假设1代表换脸任务
             task_state      = TaskState.InQueue,  # 初始状态
             priority        = 0,
             credit          = 1,

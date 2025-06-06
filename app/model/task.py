@@ -124,5 +124,5 @@ class TaskInfo(BaseModel):
     def get_task_path(self):
         if self._task_path is None:
             today = datetime.today().strftime("%Y%m%d")
-            self._task_path = os.path.join(config.get("task_path"), today, self.task_id)
+            self._task_path = os.path.join(config.get("deep.task_path"), today, self.task_id)
         return self._task_path

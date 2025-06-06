@@ -106,14 +106,23 @@ class TaskService:
                 return Error.OK
             else: 
                 logger.warning(f"update_task >> update task({task.task_id}) fail, err: {err}")
-
+                
+    def generate_task_types(self):
+        if not self.types:  # 如果 types 为空
+            return ''
+        elif len(self.types) == 1:  # 如果 types 只有一个字符串
+            return f'taskType={self.types[0]}'
+        else:  # 如果 types 有两个字符串
+            return '&'.join(f'taskType={t}' for t in self.types)  # 用 '&' 连接
+        
     def do_get_task(self, proxy=None):
-        url = f'{self.api_base}/task'
-        params = {
-            "taskType": "both",
-            "node": self.node_name
-        }
-        headers = {'Authorization': f'Basic api-{self.api_key}'}
+        types = self.generate_task_types()
+        url = f'{self.api_base}/task?node={self.node_name}'
+        if types != '':
+            url = url + '&' + types
+        logger.debug(f'url: {url}')
+        
+        headers = {'Authorization': f'Basic {self.api_key}'}
         proxies = None
         if proxy != None:
             proxies = {
@@ -121,7 +130,7 @@ class TaskService:
                 "https": proxy
             }
         try:
-            resp = requests.get(url, params=params, headers=headers, proxies=proxies)
+            resp = requests.get(url, headers=headers, proxies=proxies)
             if resp.status_code == 200 :
                 # 解析返回的 JSON 并转换为 Pydantic 对象
                 j = resp.json()
@@ -155,7 +164,7 @@ class TaskService:
     def do_update_task(self, req, proxy=None):
 
         url = f'{self.api_base}/task'
-        headers = {'Authorization': f'Basic api-{self.api_key}'}
+        headers = {'Authorization': f'Basic {self.api_key}'}
         proxies = None
         if proxy != None:
             proxies = {
@@ -231,7 +240,7 @@ class TaskService:
     
     def do_download_file(self, url, task_path, name, proxies=None ):
         try:
-            headers = {'Authorization': f'Basic api-{self.api_key}'}
+            headers = {'Authorization': f'Basic {self.api_key}'}
             response = requests.get(url, headers=headers, stream=True, timeout=15, proxies=proxies)
             
             status = response.status_code

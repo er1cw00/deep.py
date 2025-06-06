@@ -106,6 +106,9 @@ def main(*func_args, **func_kwargs):
         
     width, height = check_resolution(args.width, args.height)
     device = check_device(args.device.lower())
+    if device == 'cuda':
+        use_xformers = True
+        use_memory_efficient_attention = True
     
     print(f'step: {args.step}')
     print(f'resolution: {width}x{height}')

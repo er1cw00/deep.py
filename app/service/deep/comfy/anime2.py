@@ -115,7 +115,10 @@ def main(*func_args, **func_kwargs):
         
     max_width, max_height = check_resolution(args.max_width, args.max_height)
     device = check_device(args.device.lower())
-    
+    if device == 'cuda':
+        use_xformers = True
+        use_memory_efficient_attention = True
+        
     providers = get_providers_from_device(device)
     positive_prompt = "1girl, masterpiece, high quality, fantasy style"
     negative_prompt = "nsfw,watermark"
@@ -141,7 +144,21 @@ def main(*func_args, **func_kwargs):
     
     pipe = pipe.to(device)  # 如果你有GPU，使用CUDA加速
     pipe.enable_attention_slicing()
-    
+    if use_xformers:
+        try:
+            pipe.enable_xformers_memory_efficient_attention()
+            print("[Info] xformers memory efficient attention enabled.")
+        except Exception as e:
+            print(f"[Warning] xformers not available: {e}")
+
+    # 是否启用 diffusers 内置的 memory efficient attention
+    if use_memory_efficient_attention:
+        try:
+            pipe.enable_model_cpu_offload()  # 让不必要的部分放到CPU，进一步省显存
+            print("[Info] model CPU offload enabled.")
+        except Exception as e:
+            print(f"[Warning] CPU offload failed: {e}")
+            
     with torch.no_grad():
         image = pipe(
             image=image,

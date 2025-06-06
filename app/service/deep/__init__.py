@@ -107,20 +107,23 @@ class Deep:
         return '',  Error.FileNotFound
     
 
-    
-   
-    
     def do_exec(self, commands):
         try:
             result = subprocess.run(commands, capture_output=True, text=True, check=True)
-            logger.info(f"do_exec return: {result.returncode}, stderr: {result.stderr.strip()}")
+            err = 'none'
+            if result.stderr is not None:
+                err = result.stderr.strip()
+            logger.info(f"do_exec return: {result.returncode}, stderr: {err}")
             return Error.OK
         except subprocess.CalledProcessError as e:
-            logger.error(f"do_exec exception return: {e.returncode}, error: {e.stderr.strip()}")
+            err = 'none'
+            if e.stderr is not None:
+                err = e.stderr.strip()
+            logger.error(f"do_exec exception return: {e.returncode}, error: {err}")
             return Error.SubprocessFail
    
     def txt2img(self, task):
-        print(f'task =  {task.json()}') 
+        print(f'txt2img >> task =  {task.json()}') 
         task_path = task.get_task_path()
         output_path = os.path.join(task_path, 'output.jpg')
         txt2img_path = os.path.join(os.path.dirname(__file__), "comfy/txt2img.py")
@@ -150,25 +153,22 @@ class Deep:
         return '',  Error.FileNotFound
     
     def anime(self, task):
-        print(f'task =  {task.json()}')
+        print(f'anime >> task = {task.json()}')
         task_path = task.get_task_path()
         target_path = os.path.join(task_path, 'target.jpg')
         output_path = os.path.join(task_path, 'output.jpg')
         anime_path = os.path.join(os.path.dirname(__file__), "comfy/anime2.py")
-        device = 'CPU'
-        if self.device == 'cuda':
-            device = 'CUDA'
-        elif self.device == 'mps':
-            device = 'CoreML'
+        ckpt_model = "MoyouV2.safetensors"
         
         commands = [
                 'python', anime_path, 
-                '-c', self.comfy_path,
+                '-d', self.device,
+                '-m', self.model_path,
+                '-c', ckpt_model,
                 '-i', target_path,
                 '-o', output_path,
                 '-W', '1024',
-                '-H', '1024',
-                '-d', device
+                '-H', '1024'
             ]
         err = self.do_exec(commands=commands)
         if err != Error.OK:
