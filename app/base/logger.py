@@ -55,13 +55,13 @@ def logger_init():
         backtrace=True,                 # 记录异常堆栈（可选）
         diagnose=True                   # 显示变量值（可选）
     )
-    if env != 'pro':
-        logger.add(
-            sink=sys.stdout,
-            level=log_level,
-            format=log_format,
-            enqueue=True
-        )
+    #if env != 'pro':
+    logger.add(
+        sink=sys.stdout,
+        level=log_level,
+        format=log_format,
+        enqueue=True
+    )
     
     # **重定向 FastAPI、Uvicorn 和 `boto3` 日志**
     logging.basicConfig(handlers=[InterceptHandler()], level=logging.INFO, force=True)
