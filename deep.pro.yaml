@@ -11,15 +11,19 @@ r2:
   access_key: "c26f8c9908ed565b0947e09e311b4701"
   access_secret: "d717c8cfcb2198090d47c18c7c1795f3bbe82756d1ba976e7e0294edfa43e0d1"
   api_base: "https://files.facefusion.app"
+deep:
+  mode: "pull"
+  api_base: "http://192.168.1.2:9000/api/v1/conv"
+  task_path: "/home/eric/workspace/AI/tbox.ai/data/deep/task"
+  task_type:
+    - comfy
+  model_path: "/home/eric/workspace/AI/sd/ComfyUI/models"
+  model_json: "/home/eric/workspace/AI/tbox.ai/deep.py/models.json"
+  vcodec: libx265
+  interval: 20
+env: "pro"
 name: "archlinux-3060"
-api_base: "http://192.168.1.2:9000/api/v1/conv"
-api_key: "ZDA3OTUzNDQ0MmE1Yjk0MzA0YzJmNDMxMGU3MDZkNWE="
-model_path: "/home/eric/workspace/AI/sd/ComfyUI/models"
-task_path: "/home/eric/workspace/AI/tbox.ai/data/deep/task"
-model_json: "/home/eric/workspace/AI/tbox.ai/deep.py/models.json"
-interval: 25
-video_codec: libx265
-mode: pull
+app_key: "ZDA3OTUzNDQ0MmE1Yjk0MzA0YzJmNDMxMGU3MDZkNWE="
 proxy:
   - "http://192.168.3.111:8080"
   - "http://192.168.1.2:8082"
