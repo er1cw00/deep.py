@@ -2,10 +2,11 @@ import os
 import requests
 import ffmpeg
 import traceback
+import json
 from PIL import Image
 from loguru import logger
 from pydantic import ValidationError
-from app.model.task import TaskInfo, TaskType, TaskState
+from app.model.task import TaskInfo, TaskType, TaskState, get_task_type_name, is_comfy_task
 from app.model.schema import BaseResponse, GetDeepTaskResponse, UpdateDeepTaskRequest
 from app.base.media import get_mime_type_from_filepath, get_postfix_from_mime_type
 from app.base.config import config
@@ -37,23 +38,29 @@ class TaskService:
         
         logger.info(f"TaskService start >> env({self.env}), node({self.node_name}), types({self.types})")
 
+    def check_task_type(self, task):
+        if task.task_type == TaskType.FaceSwap and 'faceswap' in self.types: 
+            return True
+        elif is_comfy_task(task.task_type) and 'comfy' in self.types:
+            return True
+        return False
+    
     def get_task(self):
         count = 0 
         if self.env == 'pro':
             count = config.get_proxy_count()
         if count == 0:
             resp = self.do_get_task(proxy=None)
-            if resp != None and resp.code == 0:
+            if resp != None and resp.code == 0 and self.check_task_type(resp.task) == True:
                 return resp.task
         for i in range(count):
             proxy = config.get_proxy(i)
             resp = self.do_get_task(proxy)
-            if resp != None and resp.code == 0:
+            if resp != None and resp.code == 0 and self.check_task_type(resp.task) == True:
                 return resp.task
         return None
     
     def prepare_files(self, task):
-        logger.debug(f"prepare_files >>")
         task_path = task.get_task_path()
         logger.debug(f"prepare_files >> task_path: {task_path}")
 
@@ -72,10 +79,11 @@ class TaskService:
                 return err
         return Error.OK
     
-    def update_task(self, task, output):
+    def update_task(self, task, output, msg):
         req = UpdateDeepTaskRequest(
             node        = self.node_name,
             uid         = task.uid,
+            message     = msg,
             task_id     = task.task_id,
             task_state  = TaskState.Fail
         )
@@ -88,6 +96,8 @@ class TaskService:
                 if err == Error.OK:
                     req.task_state  = TaskState.Success
                 else:
+                    req.message = err
+                    req.task_state = TaskState.Fail
                     logger.error(f"update_task >> put obj task({task.task_id}) result fail, err: {err}")
         count = 0 
         err = Error.OK
@@ -106,21 +116,19 @@ class TaskService:
                 return Error.OK
             else: 
                 logger.warning(f"update_task >> update task({task.task_id}) fail, err: {err}")
-                
+        logger.info(f'update_task >> task({task.task_id}) type({get_task_type_name(task.task_type)}), update response: {resp.model_dump_json()}')
     def generate_task_types(self):
         if not self.types:  # 如果 types 为空
             return ''
-        elif len(self.types) == 1:  # 如果 types 只有一个字符串
-            return f'taskType={self.types[0]}'
-        else:  # 如果 types 有两个字符串
-            return '&'.join(f'taskType={t}' for t in self.types)  # 用 '&' 连接
+        else:
+            return '&'.join(f'{t}' for t in self.types)  # 用 '&' 连接
         
     def do_get_task(self, proxy=None):
         types = self.generate_task_types()
         url = f'{self.api_base}/task?node={self.node_name}'
         if types != '':
             url = url + '&' + types
-        logger.debug(f'url: {url}')
+        #logger.debug(f'url: {url}')
         
         headers = {'Authorization': f'Basic {self.api_key}'}
         proxies = None
@@ -153,7 +161,7 @@ class TaskService:
         return None
     
     def do_fetch_file(self, url, name, task_path) -> tuple[str, Error]:
-        logger.debug(f"do_fetch_file >> url: {url}, name: {name}, task_path: {task_path}")
+        logger.debug(f"do_fetch_file >> url: {url}, name: {name}")
         if url.startswith("http://") or url.startswith("https://"):
             return self.download_file(url, task_path, name)
         elif url.startswith("r2://") or url.startswith("s3://"):

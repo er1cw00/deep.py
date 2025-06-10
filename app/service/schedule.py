@@ -2,6 +2,7 @@ import os
 import asyncio
 import requests
 import traceback
+import json
 from loguru import logger
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
@@ -9,7 +10,7 @@ from pydantic import ValidationError
 from app.base.config import config
 from app.base.error import Error
 from app.model.schema import GetDeepTaskResponse, UpdateDeepTaskRequest
-from app.model.task import TaskType, TaskState
+from app.model.task import TaskType, TaskState, is_comfy_task
 from app.service.task import ts
 from app.service.deep import deep
 
@@ -21,12 +22,13 @@ class Scheduler:
     def dispatch_task(self, task):
         output = ''
         task.task_state == TaskState.InProgress
+        print(f'dispatch_task >> task: {task.model_dump_json()}')
         try:
             err = ts.prepare_files(task)
             if err != Error.OK:
                 logger.error(f'dispatch_task >> prepare files for task({task.task_id}) fail, err: {err}')
             else:
-                if task.task_type == TaskType.FaceSwap2:
+                if task.task_type == TaskType.FaceSwap or task.task_type == TaskType.FaceSwap2:
                     output, err = deep.faceswap(task)
                 elif task.task_type == TaskType.Rmbg:
                     output, err = deep.rmbg(task)
@@ -51,9 +53,9 @@ class Scheduler:
             traceback.print_exc()
             
         logger.debug(f"dispatch_task >> update task: {task.task_id}, output: {output} err: {err}")
-        ts.update_task(task, output)
+        ts.update_task(task, output, err)
         
-       
+
     async def scheule_task(self):
         """异步后台任务：定期拉取数据"""
         logger.info(f'scheule_task >>> ')

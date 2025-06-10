@@ -8,7 +8,7 @@ from app.base.config import config
 class TaskType:
     Unknown         = 0                 # 原TaskNone（避免与Python关键字None冲突）
     Dummy           = 1                 # 原TaskDummy
-    #FaceSwap        = 3                 # 原TaskFaceSwap
+    FaceSwap        = 3                 # 原TaskFaceSwap
     MinComfyTask    = 1000              # 范围标记保持原名
     Upscale         = 1000              # 原TaskUpscale
     Rmbg            = 1001              # 原TaskRMBG（RFC规范缩写通常全大写，这里按驼峰处理）
@@ -20,7 +20,12 @@ class TaskType:
     FaceSwap2       = 1007              # 原TaskFaceSwap
     MaxComfyTask    = 1007              # 范围标记保持原名
 
-def get_task_type_name(t):
+def is_comfy_task(t) -> bool:
+    if t >= TaskType.MinComfyTask and t <= TaskType.MaxComfyTask:
+        return True
+    return False 
+
+def get_task_type_name(t) -> str:
     if t == TaskType.Dummy: 
         return 'dummy'
     elif t == TaskType.Upscale: 
@@ -37,7 +42,7 @@ def get_task_type_name(t):
         return 'facerestore'
     elif t == TaskType.FaceSwap2: 
         return 'faceswap2'
-    return 'unknonw'
+    return 'none'
     
 class TaskState:
     Unknown     = 0              # 原TaskStateNone（避免与Python关键字None冲突）

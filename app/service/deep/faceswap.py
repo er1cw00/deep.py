@@ -154,11 +154,12 @@ class FaceSwapper:
                 return self.enhance_video(task)
             else:
                 return self.enhance_image(task)
-        elif task.task_type == TaskType.FaceSwap2:
+        elif task.task_type == TaskType.FaceSwap or task.task_type == TaskType.FaceSwap2:
             if task.video:
                 return self.swap_video(task)
             else:
                 return self.swap_image(task)
+        return "", Error.UnknownTask
     
     def swap_image(self, task):
         timer = Timer()

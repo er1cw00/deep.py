@@ -21,7 +21,8 @@ class InterceptHandler(logging.Handler):
 
         logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
 
-
+    #current_time = datetime.now().strftime("%Y%m%d0000")
+    #log_file = os.path.join(log_path, f"logview-{current_time}.log")
 def logger_init():
     log_path = config.get('log.path')
     log_level = config.get('log.level').upper()
@@ -31,9 +32,8 @@ def logger_init():
         os.makedirs(log_path, exist_ok=True)
         print(f"创建日志目录: {log_path}")
     
-    current_time = datetime.now().strftime("%Y%m%d0000")
-    log_file = os.path.join(log_path, f"logview-{current_time}.log")
 
+    log_file = os.path.join(log_path, "logview-{time:YYYYMMDDHHmmss}.log")
 
     valid_levels = ["TRACE", "DEBUG", "INFO", "SUCCESS", "WARNING", "ERROR", "CRITICAL"]
     if log_level not in valid_levels:
@@ -45,8 +45,9 @@ def logger_init():
     print(f'log_file: {log_file}')
     # 配置 Loguru
     logger.add(
-        log_file,# log_path + '/{logview_{time:YYYYMMDD}.log}',
+        log_file,
         format=log_format,
+        #rotation="10 minutes",
         rotation="00:00",               # 每日轮换（按需修改）
         level=log_level,                # 动态设置日志级别
         enqueue=True,                   # 多进程安全

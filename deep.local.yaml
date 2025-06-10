@@ -14,10 +14,10 @@ r2:
 deep:
   mode: "pull"
   api_base: "http://localhost:9000/api/v1/conv"
-  task_path: "/Users/wadahana/workspace/AI/tbox.ai/data/deep/task"
+  task_path: "/Users/wadahana/workspace/AI/tbox.ai/data/tbox/task"
   task_type:
-    - comfy
     - faceswap
+    - comfy
   model_path: "/Users/wadahana/workspace/AI/sd/ComfyUI/models"
   model_json: "/Users/wadahana/workspace/AI/tbox.ai/deep.py/models.json"
   vcodec: libx265

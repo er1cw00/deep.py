@@ -23,5 +23,6 @@ class GetDeepTaskResponse(BaseResponse):
 class UpdateDeepTaskRequest(BaseModel):
     node: str
     uid: str
+    message: str
     task_id: str
     task_state: int
