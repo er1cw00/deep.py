@@ -1,10 +1,11 @@
 from enum import Enum
 
-class Error(Enum):
+class Error(str, Enum):
     OK = 'ok'
     Unknown = "unknown error"
     FileNotFound = 'file not found'
     TaskNotFount = 'task not found'
+    UnknownTask = 'unknown task'
     MNotExist = 'dir not exist'
     NetworkError = 'network error'
     CredentialsError = 'credentials error'

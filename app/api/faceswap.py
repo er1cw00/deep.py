@@ -38,16 +38,16 @@ async def frame_process(req: FaceSwapRequest):
         if err == Error.OK:
             task.task_state = TaskState.Success
         else:
-            logger.error(f'frame_process >> task({task.task_id}) fail, err: {err}')
+            logger.error(f'frame_process >> uid({task.uid}) task({task.task_id}) fail, err: {err}')
             task.task_state = TaskState.Fail
             
     except Exception as e:
         err = Error.Unknown
         task.task_state = TaskState.Fail
-        logger.error(f'frame_process >> task({task.task_id}) exception: {e}')
+        logger.error(f'frame_process >> uid({task.uid}) task({task.task_id}) exception: {e}')
         traceback.print_exc()
         
-    logger.debug(f"frame_process >> update task: {task.task_id}, state:{task.task_state}, output: {output} err: {err}")
+    logger.debug(f"frame_process >> update uid({task.uid}) task({task.task_id}), state({task.task_state}), output: {output} err: {err}")
     if task.task_state == TaskState.Success:
         if os.path.isfile(output) == True:
             return FaceSwapResponse(
