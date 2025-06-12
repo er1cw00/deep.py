@@ -33,7 +33,7 @@ def logger_init():
         print(f"创建日志目录: {log_path}")
     
 
-    log_file = os.path.join(log_path, "logview-{time:YYYYMMDDHHmmss}.log")
+    log_file = os.path.join(log_path, "logview-{time:YYYYMMDD}.log")
 
     valid_levels = ["TRACE", "DEBUG", "INFO", "SUCCESS", "WARNING", "ERROR", "CRITICAL"]
     if log_level not in valid_levels:

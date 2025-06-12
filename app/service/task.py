@@ -56,8 +56,11 @@ class TaskService:
         for i in range(count):
             proxy = config.get_proxy(i)
             resp = self.do_get_task(proxy)
-            if resp != None and resp.code == 0 and self.check_task_type(resp.task) == True:
-                return resp.task
+            if resp != None:
+                if resp.code == 0 and self.check_task_type(resp.task) == True:
+                    return resp.task
+                elif resp.code == 1002:
+                    return None
         return None
     
     def prepare_files(self, task):
