@@ -146,18 +146,18 @@ class TaskService:
                 return task_resp
             else:
                 # 处理请求失败的情况
-                logger.error(f"fetch_task >> {resp.reason} {resp.status_code} - {resp.text}")
+                logger.error(f"fetch_task >> resp fail, proxy({proxy}) {resp.reason} {resp.status_code} - {resp.text}")
             return None
         except ValidationError as e:
-            logger.error(f"unmarsh task resp fail >> {e}")
+            logger.error(f"unmarsh task resp fail >> proxy({proxy}) {e}")
         except requests.exceptions.HTTPError as e:
-            logger.error(f"request http error exception >> {e}")
+            logger.error(f"request http error exception >> proxy({proxy}) {e}")
         except requests.exceptions.Timeout as e:
-            logger.error(f"request timeout exception >> {e}")
+            logger.error(f"request timeout exception >> proxy({proxy}) {e}")
         except requests.exceptions.RequestException as e:
-            logger.error(f"request exception >> {e}")
+            logger.error(f"request exception >> proxy({proxy}) {e}")
         except Exception as e:
-            logger.error(f"unknown exception >> {e}")
+            logger.error(f"unknown exception >> proxy({proxy}) {e}")
         return None
     
     def do_fetch_file(self, url, name, task_path) -> tuple[str, Error]:
