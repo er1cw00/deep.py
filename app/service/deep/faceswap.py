@@ -219,7 +219,7 @@ class FaceSwapper:
                 max_frame_count = count
                 trim_duration = task.trim_duration
             
-        logger.info(f"task({task.task_id}), res({width}x{height}@{fps}), target_fps({target_fps}), total({total}) max_frame_count({max_frame_count}), trim_duration({trim_duration}), frame_interval({frame_interval})")
+        logger.info(f"task({task.task_id}), res({width}x{height}@{fps:.2f}), target_fps({target_fps}), total({total}) max_frame_count({max_frame_count}), trim_duration({trim_duration}), frame_interval({frame_interval:.4f})")
         
         frame_index = 0
         new_frame_id = 0  # 目标视频的帧编号

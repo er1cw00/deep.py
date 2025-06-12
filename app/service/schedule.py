@@ -22,7 +22,7 @@ class Scheduler:
     def dispatch_task(self, task):
         output = ''
         task.task_state == TaskState.InProgress
-        print(f'dispatch_task >> task: {task.model_dump_json()}')
+        logger.info(f'dispatch_task >> task: {task.model_dump_json()}')
         try:
             err = ts.prepare_files(task)
             if err != Error.OK:
