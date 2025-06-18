@@ -7,5 +7,5 @@ pip cache purge
 apt-get autoclean
 apt-get clean
 
-./prebuild.sh
+
 
