@@ -72,8 +72,7 @@ class Deep:
                                 device=self.device, 
                                 mask_bbox=True,
                                 mask_occlusion=True,
-                                show_progress=False)
-        print('do_faceswap >> process ')    
+                                show_progress=False) 
         return self._swapper.process(task)
     
     def faceswap(self, task):

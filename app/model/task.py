@@ -26,7 +26,11 @@ def is_comfy_task(t) -> bool:
     return False 
 
 def get_task_type_name(t) -> str:
-    if t == TaskType.Dummy: 
+    if t == TaskType.FaceSwap: 
+        return 'faceswap'
+    elif t == TaskType.FaceSwap2: 
+        return 'faceswap2'
+    elif t == TaskType.Dummy: 
         return 'dummy'
     elif t == TaskType.Upscale: 
         return 'unscale'
@@ -40,8 +44,6 @@ def get_task_type_name(t) -> str:
         return 'txt2img'
     elif t == TaskType.FaceRestore: 
         return 'facerestore'
-    elif t == TaskType.FaceSwap2: 
-        return 'faceswap2'
     return 'none'
     
 class TaskState:
