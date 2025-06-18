@@ -51,8 +51,12 @@ class TaskService:
             count = config.get_proxy_count()
         if count == 0:
             resp = self.do_get_task(proxy=None)
-            if resp != None and resp.code == 0 and self.check_task_type(resp.task) == True:
-                return resp.task
+            if resp != None:
+                if resp.code == 0 and self.check_task_type(resp.task) == True:
+                    return resp.task
+                elif resp.code == 1002:
+                    return None
+                
         for i in range(count):
             proxy = config.get_proxy(i)
             resp = self.do_get_task(proxy)
@@ -61,6 +65,7 @@ class TaskService:
                     return resp.task
                 elif resp.code == 1002:
                     return None
+                
         return None
     
     def prepare_files(self, task):
@@ -103,7 +108,7 @@ class TaskService:
                     req.task_state = TaskState.Fail
                     logger.error(f"update_task >> put obj task({task.task_id}) result fail, err: {err}")
         count = 0 
-        err = Error.OK
+        err = Error.Unknown
         if self.env == 'pro':
             count = config.get_proxy_count()
         if count == 0:
@@ -116,10 +121,13 @@ class TaskService:
             proxy = config.get_proxy(i)
             resp, err = self.do_update_task(req, proxy)
             if err == Error.OK: 
-                return Error.OK
+                break
             else: 
-                logger.warning(f"update_task >> update task({task.task_id}) fail, err: {err}")
+                logger.warning(f"update_task >> update task({task.task_id}) proxy({proxy}) fail, err: {err}")
+    
         logger.info(f'update_task >> task({task.task_id}) type({get_task_type_name(task.task_type)}), update response: {resp.model_dump_json()}')
+        return err
+    
     def generate_task_types(self):
         if not self.types:  # 如果 types 为空
             return ''
