@@ -1,8 +1,9 @@
 import os
 import boto3
+import botocore
+from botocore.config import Config
 import shutil 
 import requests
-import botocore
 import ffmpeg
 import traceback
 from PIL import Image
@@ -24,29 +25,37 @@ class S3:
         self.region          = "auto" 
         self.endpoint_url    = f"https://{self.account_id}.r2.cloudflarestorage.com"
         self.clients         = []
+        proxy_count          = config.get_proxy_count()
         logger.debug(f'account_id: {self.account_id}; access_key:{self.access_key}, access_secret: {self.access_secret}; bucket: {self.bucket_name}')
         
-        proxy_count          = config.get_proxy_count()
         if proxy_count > 0:
             for i in range(0, proxy_count):
                 proxy = config.get_proxy(i)
                 logger.info(f's3 proxy[{i}]: {proxy} ')
+                s3_config = Config(proxies={'http': proxy, 'https': proxy},
+                                   connect_timeout=15, 
+                                   read_timeout=45,
+                                   retries={'max_attempts': 3,'mode': 'standard'})
                 client = boto3.client(
                     service_name ="s3",
                     aws_access_key_id=self.access_key,
                     aws_secret_access_key=self.access_secret,
                     endpoint_url=self.endpoint_url,
                     region_name=self.region,
-                    config=boto3.session.Config(proxies={'http': proxy, 'https': proxy})
+                    config=s3_config,
                 )
                 self.clients.append(client)
         else:
+            s3_config = Config(connect_timeout=15, 
+                               read_timeout=45,
+                               retries={'max_attempts': 3,'mode': 'standard'})
             client = boto3.client(
                     "s3",
                     aws_access_key_id=self.access_key,
                     aws_secret_access_key=self.access_secret,
                     endpoint_url=self.endpoint_url,
                     region_name=self.region,
+                    config=s3_config,
                 )
             self.clients.append(client)
         

@@ -10,7 +10,7 @@ from pydantic import ValidationError
 from app.base.config import config
 from app.base.error import Error
 from app.model.schema import GetDeepTaskResponse, UpdateDeepTaskRequest
-from app.model.task import TaskType, TaskState, is_comfy_task
+from app.model.task import TaskType, TaskState, is_comfy_task, get_task_type_name
 from app.service.task import ts
 from app.service.deep import deep
 
@@ -28,6 +28,7 @@ class Scheduler:
             if err != Error.OK:
                 logger.error(f'dispatch_task >> prepare files for task({task.task_id}) fail, err: {err}')
             else:
+                logger.info(f'dispatch_task >> start task({task.task_id}) type({get_task_type_name(task.task_type)})')
                 if task.task_type == TaskType.FaceSwap or task.task_type == TaskType.FaceSwap2:
                     output, err = deep.faceswap(task)
                 elif task.task_type == TaskType.Rmbg:
