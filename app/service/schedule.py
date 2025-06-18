@@ -40,7 +40,7 @@ class Scheduler:
                     output, err = deep.anime(task)
                 elif task.task_type == TaskType.Txt2Img:
                     output, err = deep.txt2img(task)
-
+                    
             if err == Error.OK:
                 task.task_state = TaskState.Success
             else:
@@ -54,21 +54,26 @@ class Scheduler:
             
         logger.debug(f"dispatch_task >> update task: {task.task_id}, output: {output} err: {err}")
         ts.update_task(task, output, err)
-        
+
 
     async def scheule_task(self):
         """异步后台任务：定期拉取数据"""
         logger.info(f'scheule_task >>> ')
         await asyncio.sleep(5)
         while True:
+            interval = self.interval
             try:
                 task = ts.get_task()
                 if task != None:
                     self.dispatch_task(task)
+                    interval = 1
+                else:
+                    interval = self.interval    
             except Exception as e:
                 logger.warning(f"Error fetching task: {e}")
                 traceback.print_exc()
-            await asyncio.sleep(self.interval)
+            
+            await asyncio.sleep(interval)
         
 @asynccontextmanager
 async def lifespan(app: FastAPI):
