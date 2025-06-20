@@ -107,16 +107,17 @@ providers = ['CUDAExecutionProvider']
 yolo_path = '/home/eric/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx'
 seg_path = '/home/eric/workspace/AI/sd/ComfyUI/models/facefusion/dfl_xseg.onnx'
 seg1_path = '/home/eric/workspace/AI/sd/ComfyUI/models/facefusion/xseg_1.onnx'
-seg0_path = '/home/eric/workspace/AI/sd/ComfyUI/models/facefusion/occluder.onnx'
+#seg0_path = '/home/eric/workspace/AI/sd/ComfyUI/models/facefusion/occluder.onnx'
+seg0_path = '/home/eric/workspace/AI/sd/ComfyUI/models/facefusion/xseg_sim_2.onnx'
 
 yolo = YoloFace(model_path=yolo_path, providers=providers)
-xseg0 = Occluder(model_path=seg0_path, providers=providers)
+#xseg0 = Occluder(model_path=seg0_path, providers=providers)
+xseg0 = XSeg(model_path=seg0_path, providers=providers)
 xseg1 = XSeg(model_path=seg1_path, providers=providers)
     
     # input_path = '/Users/wadahana/Desktop/sis/faceswap/test/sq/suck2.mp4 '
     # output_path = './suck2_mask.mp4'
     
-
 photo_list, video_list = get_test_files()
 
 print("Photo directories:")
@@ -126,14 +127,15 @@ for path in photo_list:
     print(path)
     test_image(yolo, xseg0, xseg1, input_path, output_path)
 
-print("\nVideo directories:")
-for path in video_list:
-    input_path = os.path.join(path, 'target.mp4')
-    output_path = os.path.join(path, 'output_mask2.mp4')
-    print(path)
-    print(input_path)
-    print(output_path)
-    test_video(yolo, xseg0, xseg1, input_path, output_path)
+
+# print("\nVideo directories:")
+# for path in video_list:
+#     input_path = os.path.join(path, 'target.mp4')
+#     output_path = os.path.join(path, 'output_mask2.mp4')
+#     print(path)
+#     print(input_path)
+#     print(output_path)
+#     test_video(yolo, xseg0, xseg1, input_path, output_path)
     
 #test_video(yolo, input_path, output_path, xseg0, xseg1)
 
