@@ -106,8 +106,8 @@ seg0_path = '/home/eric/workspace/AI/sd/ComfyUI/models/facefusion/occluder.onnx'
 seg1_path = '/home/eric/workspace/AI/sd/ComfyUI/models/facefusion/xseg_sim_2.onnx'
 
 yolo = YoloFace(model_path=yolo_path, providers=providers)
-xseg0 = Occluder(model_path=seg0_path, providers=providers)
-xseg1 = XSeg(model_path=seg1_path, providers=providers)
+xseg1 = Occluder(model_path=seg0_path, providers=providers)
+xseg0 = XSeg(model_path=seg1_path, providers=providers)
 #xseg1 = XSeg(model_path=seg1_path, providers=providers)
     
     # input_path = '/Users/wadahana/Desktop/sis/faceswap/test/sq/suck2.mp4 '
