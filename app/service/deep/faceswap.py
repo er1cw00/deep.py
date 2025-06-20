@@ -129,7 +129,7 @@ class FaceSwapper:
         if self.mask_bbox == True and self.task_config.mask_bbox:
             bbox_mask = create_bbox_mask(crop_face.shape[:2][::-1], self.task_config.mask_bbox_blur, self.task_config.mask_bbox_padding)
             mask_list.append(bbox_mask)
-        if self.mask_occlusion == True and self.task_config.mask_occlusion == True:
+        if self.mask_occlusion == True:
             occlusion_mask = self.occluder.detect(image=crop_face)
             mask_list.append(occlusion_mask)
         if self.mask_region == True and self.task_config.mask_region == True:
@@ -147,7 +147,7 @@ class FaceSwapper:
                 self.task_config.mask_occlusion = config.face_mask_occlusion
         
     def process(self, task):
-        self.apply_task_config(task._faceswap_config)
+        #self.apply_task_config(task._faceswap_config)
 
         if task.task_type == TaskType.FaceRestore:
             if task.video:
