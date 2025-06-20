@@ -64,7 +64,7 @@ def test_video(yolo, xseg1, xseg2, input_path, output_path):
         face_list = yolo.get(image=frame, order='best-worst')
         if face_list != None and len(face_list) > 0:
             face = face_list[0]
-            resized_face, affine = warp_face_by_landmark_5(frame, face[1], arcface_128_v2, (256,256))
+            resized_face, affine = warp_face_by_landmark_5(frame, face.landmark_5, arcface_128_v2, (256,256))
             
             t1.tic()
             mask1 = xseg1.detect(image=resized_face)
@@ -123,14 +123,15 @@ for path in photo_list:
     test_image(yolo, xseg0, xseg1, input_path, output_path)
 
 
-# print("\nVideo directories:")
-# for path in video_list:
-#     input_path = os.path.join(path, 'target.mp4')
-#     output_path = os.path.join(path, 'output_mask2.mp4')
-#     print(path)
-#     print(input_path)
-#     print(output_path)
-#     test_video(yolo, xseg0, xseg1, input_path, output_path)
+print("\nVideo directories:")
+for path in video_list:
+    input_path = os.path.join(path, 'target.mp4')
+    output_path = os.path.join(path, 'output_mask2.mp4')
+    print(path)
+    print(input_path)
+    print(output_path)
+    test_video(yolo, xseg0, xseg1, input_path, output_path)
+    time.sleep(5)
     
 #test_video(yolo, input_path, output_path, xseg0, xseg1)
 
