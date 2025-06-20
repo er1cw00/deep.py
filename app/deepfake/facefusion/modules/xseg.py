@@ -61,26 +61,24 @@ if __name__ == "__main__":
         
     def test_image(yolo, xseg, input_path, output_path):
         image = cv2.imread(input_path)
-        face_list = yolo.get(image=image, conf=0.5)
-        face = face_list[0]
-       
-            
-        x1, y1, x2, y2 = map(int, face[0])
-        face_crop = image[y1:y2, x1:x2]
-        resized_face = cv2.resize(face_crop, (256, 256))
-            
-        mask = xseg.detect(image=resized_face)
-        mask = (mask * 255).clip(0, 255).astype(np.uint8)
+        face_list = yolo.get(image=image, order='best-worst')
+        
+        if face_list != None and len(face_list) > 0:
+            face = face_list[0]
+            resized_face, affine = warp_face_by_landmark_5(image, face.landmark_5, arcface_128_v2, (256,256))
+                
+            mask = xseg.detect(image=resized_face)
+            mask = (mask * 255).clip(0, 255).astype(np.uint8)
 
-        output = overlay_mask_on_face(resized_face, mask, alpha=0.5, color=(0, 0, 255))
-        mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
-        combined = cv2.hconcat([resized_face, output, mask])
-        cv2.imwrite(output_path, combined)
+            output = overlay_mask_on_face(resized_face, mask, alpha=0.5, color=(0, 0, 255))
+            
+            mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+            combined = cv2.hconcat([resized_face, output, mask])
+            cv2.imwrite(output_path, combined)
         
         
     def test_video(yolo, xseg, input_path, output_path):
 
-        
         cap = cv2.VideoCapture(input_path)
         fps = cap.get(cv2.CAP_PROP_FPS)  # 获取视频帧率
         total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -95,7 +93,7 @@ if __name__ == "__main__":
             if not ret:
                 break
             #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-            face_list = yolo.get(image=frame, conf=0.5)
+            face_list = yolo.get(image=frame, order='best-worst')
             if face_list != None and len(face_list) > 0:
 
                 face = face_list[0]
@@ -120,32 +118,38 @@ if __name__ == "__main__":
         t.show('face occluder time')
         
         
-    trt_options = {
-        #"trt_fp16_enabled": True,          # 启用 FP16 加速（可选）
-        "trt_engine_cache_enable": True,     # 启用引擎缓存
-        "trt_engine_cache_path": "/data/trt_cache",  # 缓存文件存储路径
-        "trt_timing_cache_enable": True,
-        "trt_timing_cache_path": "/data/trt_cache",
-        #'trt_builder_optimization_level': 5
-        "trt_max_workspace_size": 1 << 30  # 可选：设置最大显存工作空间（单位：字节）
-    }
-    providers = [('TensorrtExecutionProvider', trt_options)]
-    # yolo_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx'
-    # seg_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/dfl_xseg.onnx'
-    # seg1_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/xseg_1_simplified.onnx'
-    # seg1_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/xseg_1.onnx'
-    # seg0_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/occluder.onnx'
+    # trt_options = {
+    #     #"trt_fp16_enabled": True,          # 启用 FP16 加速（可选）
+    #     "trt_engine_cache_enable": True,     # 启用引擎缓存
+    #     "trt_engine_cache_path": "/data/trt_cache",  # 缓存文件存储路径
+    #     "trt_timing_cache_enable": True,
+    #     "trt_timing_cache_path": "/data/trt_cache",
+    #     #'trt_builder_optimization_level': 5
+    #     "trt_max_workspace_size": 1 << 30  # 可选：设置最大显存工作空间（单位：字节）
+    # }
+    #providers = [('TensorrtExecutionProvider', trt_options)]
+    providers=['CPUExecutionProvider', 'CoreMLExecutionProvider']
+    yolo_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/yoloface_8n.onnx'
+    seg_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/dfl_xseg.onnx'
+    #seg_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/xseg_1_simplified.onnx'
+    #seg_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/xseg_1.onnx'
+    #seg_path = "/Users/wadahana/workspace/AI/tbox.ai/temp/XSegNet2onnx/xseg_sim_2.onnx"
+    #seg_path = '/Users/wadahana/workspace/AI/sd/ComfyUI/models/facefusion/occluder.onnx'
     
-    yolo_path = '/ff/.assets/models/yoloface_8n.onnx'
-    seg_path = '/ff/.assets/models/face_occluder.onnx'
-    yolo = YoloFace(model_path=yolo_path, providers=["CUDAExecutionProvider"])
+    # yolo_path = '/ff/.assets/models/yoloface_8n.onnx'
+    # seg_path = '/ff/.assets/models/face_occluder.onnx'
+    yolo = YoloFace(model_path=yolo_path, providers=providers)
     #xseg = Occluder(model_path=seg0_path, providers=providers)
-    xseg = XSeg(model_path=seg_path, providers=[('TensorrtExecutionProvider', trt_options)])
+    xseg = XSeg(model_path=seg_path, providers=providers)
    
-    input_path = "/data/task/20250505/1e42b87f42559936a9447be1bce59165/target.mp4"
-    output_path = "/data/task/20250505/1e42b87f42559936a9447be1bce59165/output_mask.mp4" 
-    test_video(yolo=yolo, xseg=xseg, input_path=input_path, output_path=output_path)
+    # input_path = "/data/task/20250505/1e42b87f42559936a9447be1bce59165/target.mp4"
+    # output_path = "/data/task/20250505/1e42b87f42559936a9447be1bce59165/output_mask.mp4" 
+    
+    input_path = "/Users/wadahana/Desktop/blowjob.jpg" #sis/tbox/face/SongY2.jpg"
+    #input_path = "/Users/wadahana/workspace/AI/tbox.ai/data/faceswap/task/20240410/914561475fb68155b171c178da847063/target.jpg"
+    output_path = "/Users/wadahana/Desktop/sis/mask00.jpg"
+    test_image(yolo=yolo, xseg=xseg, input_path=input_path, output_path=output_path)
     
     #providers=['CPUExecutionProvider', 'CoreMLExecutionProvider', 'CUDAExecutionProvider']
    
-    
+#tbox/photo/Test2.jpg
