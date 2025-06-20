@@ -76,7 +76,7 @@ def test_video(yolo, xseg1, xseg2, input_path, output_path):
             mask2 = (mask2 * 255).clip(0, 255).astype(np.uint8)
             
             output1 = overlay_mask_on_face(resized_face, mask1, alpha=0.5, color=(0, 0, 255))
-            output2 = overlay_mask_on_face(resized_face, mask1, alpha=0.5, color=(0, 0, 255))
+            output2 = overlay_mask_on_face(resized_face, mask2, alpha=0.5, color=(0, 0, 255))
             
             #output = paste_back(frame, resized_face, mask1, affine)
             
