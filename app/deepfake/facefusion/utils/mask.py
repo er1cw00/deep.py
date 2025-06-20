@@ -35,12 +35,20 @@ def create_bbox_mask(crop_size, face_mask_blur, face_mask_padding):
         box_mask = cv2.GaussianBlur(box_mask, (0, 0), blur_amount * 0.25)
     return box_mask
 
+# def overlay_mask_on_face(face_img, mask, alpha=0.5, color=(0, 0, 255)):
+#     overlay = face_img.copy()
+#     color_layer = np.full_like(face_img, color, dtype=np.uint8)
+#     # 扩展 mask 到 3 通道（方便融合）
+#     mask_3ch = np.stack([mask]*3, axis=-1).astype(np.uint8)
+#     # 只对 mask 区域应用 alpha 混合
+#     overlay = np.where(mask_3ch > 0, cv2.addWeighted(color_layer, alpha, face_img, 1 - alpha, 0), face_img)
+#     return overlay
+    
 def overlay_mask_on_face(face_img, mask, alpha=0.5, color=(0, 0, 255)):
     overlay = face_img.copy()
     color_layer = np.full_like(face_img, color, dtype=np.uint8)
-    # 扩展 mask 到 3 通道（方便融合）
-    mask_3ch = np.stack([mask]*3, axis=-1).astype(np.uint8)
-    # 只对 mask 区域应用 alpha 混合
-    overlay = np.where(mask_3ch > 0, cv2.addWeighted(color_layer, alpha, face_img, 1 - alpha, 0), face_img)
-    
+    beta = mask.astype(float) / 255.0
+    beta_3ch = np.stack([beta, beta, beta], axis=2) 
+    overlay = (beta_3ch * color_layer + (1 - beta_3ch) * face_img).astype(np.uint8)
+    overlay = cv2.addWeighted(overlay, alpha, face_img, 1 - alpha, 0)
     return overlay
