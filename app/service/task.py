@@ -6,6 +6,7 @@ import json
 from PIL import Image
 from loguru import logger
 from pydantic import ValidationError
+from app.deepfake.utils.timer import Timer
 from app.model.task import TaskInfo, TaskType, TaskState, get_task_type_name, is_comfy_task
 from app.model.schema import BaseResponse, GetDeepTaskResponse, UpdateDeepTaskRequest
 from app.base.media import get_mime_type_from_filepath, get_postfix_from_mime_type
@@ -172,14 +173,21 @@ class TaskService:
         return None
     
     def do_fetch_file(self, url, name, task_path) -> tuple[str, Error]:
-        logger.debug(f"do_fetch_file >> url: {url}, name: {name}")
+        timer = Timer()
+        output = ""
+        err = Error.Unknown
+        timer.tic()
         if url.startswith("http://") or url.startswith("https://"):
-            return self.download_file(url, task_path, name)
+            output, err = self.download_file(url, task_path, name)
         elif url.startswith("r2://") or url.startswith("s3://"):
-            return s3.get_object(url[5:], task_path, name)
+            output, err = s3.get_object(url[5:], task_path, name)
         elif url.startswith("file://"):
-            return url[7:], Error.OK
-    
+            output = url[7:]
+            err = Error.OK
+        timer.toc()
+        logger.debug(f"do_fetch_file >> url({url}) elapsed({timer.total_time:.3f}s)")
+        return output, err
+        
     def do_update_task(self, req, proxy=None):
 
         url = f'{self.api_base}/task'
