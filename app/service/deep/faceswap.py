@@ -50,7 +50,7 @@ class FaceSwapConfig(Printable):
     face_order: str = 'left-right'
     watermark: bool = False
     mask_bbox: bool = True
-    mask_occlusion: bool = False
+    mask_occlusion: bool = True
     mask_region: bool = False
     mask_bbox_blur: float = 0.3
     mask_bbox_padding: Tuple[int, int, int, int] = (0,0,0,0)
