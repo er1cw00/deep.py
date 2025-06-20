@@ -18,12 +18,10 @@ os.environ["ORT_LOGGING_LEVEL"] = "VERBOSE"
 def test_image(yolo, xseg1, xseg2, input_path, output_path):
 
     image = cv2.imread(input_path)
-    face_list = yolo.detect(image=image, conf=0.7)
+    face_list = yolo.get(image=image, conf=0.7)
     if face_list != None and len(face_list) > 0:
         face = face_list[0]
-        x1, y1, x2, y2 = map(int, face[0])
-        face_crop = image[y1:y2, x1:x2]
-        resized_face = cv2.resize(face_crop, (256, 256))
+        resized_face, affine = warp_face_by_landmark_5(image, face.landmark_5, arcface_128_v2, (256,256))
         t1 = Timer()
         t2 = Timer()
         t1.tic()
@@ -68,9 +66,6 @@ def test_video(yolo, xseg1, xseg2, input_path, output_path):
             face = face_list[0]
             resized_face, affine = warp_face_by_landmark_5(frame, face[1], arcface_128_v2, (256,256))
             
-            x1, y1, x2, y2 = map(int, face[0])
-            # face_crop = frame[y1:y2, x1:x2]
-            # resized_face = cv2.resize(face_crop, (256, 256))
             t1.tic()
             mask1 = xseg1.detect(image=resized_face)
             t1.toc()
