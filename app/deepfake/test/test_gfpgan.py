@@ -22,7 +22,7 @@ def test_image(yolo, gfpgan, input_path, output_path):
     t2 = Timer()
     
     t1.tic()
-    face_list = yolo.get(image=image, conf=0.4)
+    face_list = yolo.get(image=image, order='best-worst')
     t1.toc()
     
     if face_list != None and len(face_list) > 0:
@@ -64,7 +64,7 @@ def test_video(yolo, gfpgan, input_path, output_path):
             break
         #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         t1.tic()
-        face_list = yolo.get(image=frame, conf=0.4)
+        face_list = yolo.get(image=frame, order='best-worst')
         t1.toc()
         
         if face_list != None and len(face_list) > 0:
@@ -96,7 +96,7 @@ gfpgan_path = '/data/models/gfpgan_1.4.onnx'
 
 providers=['CUDAExecutionProvider', 'CPUExecutionProvider']
 
-yolo = YoloFace(model_path=yolo_path, providers=providers)
+yolo = YoloFace(model_path=yolo_path, providers=providers, threshold=0.4)
 gfpgan = GFPGAN(model_path=gfpgan_path, providers=providers)
     
 # input_path = "/home/eric/workspace/AI/sd/temp/mask/0d4fc3a041d6befd7a2ee218da2d820b/source.jpg"

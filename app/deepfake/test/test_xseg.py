@@ -18,7 +18,7 @@ os.environ["ORT_LOGGING_LEVEL"] = "VERBOSE"
 def test_image(yolo, xseg1, xseg2, input_path, output_path):
 
     image = cv2.imread(input_path)
-    face_list = yolo.get(image=image, conf=0.7)
+    face_list = yolo.get(image=image, order='best-worst')
     if face_list != None and len(face_list) > 0:
         face = face_list[0]
         resized_face, affine = warp_face_by_landmark_5(image, face.landmark_5, arcface_128_v2, (256,256))
@@ -61,7 +61,7 @@ def test_video(yolo, xseg1, xseg2, input_path, output_path):
         if not ret:
             break
         #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        face_list = yolo.get(image=frame, conf=0.7)
+        face_list = yolo.get(image=frame, order='best-worst')
         if face_list != None and len(face_list) > 0:
             face = face_list[0]
             resized_face, affine = warp_face_by_landmark_5(frame, face[1], arcface_128_v2, (256,256))
