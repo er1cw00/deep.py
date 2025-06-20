@@ -4,13 +4,13 @@ import time
 import imageio
 import numpy as np
 from rich.progress import track
-from deepfake.facefusion.modules.yoloface import YoloFace
-from deepfake.facefusion.modules.occluder import Occluder
-from deepfake.facefusion.modules.gfpgan import GFPGAN
-from deepfake.facefusion.utils.mask import overlay_mask_on_face, create_bbox_mask
-from deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark_5, paste_back, blend_frame
-from deepfake.utils.timer import Timer
-from deepfake.utils.video import get_video_writer
+from app.deepfake.facefusion.modules.yoloface import YoloFace
+from app.deepfake.facefusion.modules.occluder import Occluder
+from app.deepfake.facefusion.modules.gfpgan import GFPGAN
+from app.deepfake.facefusion.utils.mask import overlay_mask_on_face, create_bbox_mask
+from app.deepfake.facefusion.utils.affine import arcface_128_v2, ffhq_512, warp_face_by_landmark_5, paste_back, blend_frame
+from app.deepfake.utils.timer import Timer
+from app.deepfake.utils.video import get_video_writer
 from .file import get_test_files
 
 
