@@ -119,8 +119,9 @@ class S3:
                     Bucket=self.bucket_name,
                     Key=obj_key,
                     Body=f.read(),
+                    ContentType=content_type
                 )
-            logger.debug(f"put object >> {obj_key}")
+            logger.debug(f"put object >> content_type({content_type}) key({obj_key})")
             return Error.OK
         except requests.exceptions.ProxyError:
             logger.error("error: proxy error")

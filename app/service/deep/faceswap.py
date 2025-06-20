@@ -183,7 +183,7 @@ class FaceSwapper:
         output = self.swap_face(source, source_face, target=target, target_faces=target_faces)
         cv2.imwrite(output_path, output, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
         timer.toc()
-        logger.info(f'task({task.task_id}) photo swap cost({timer.total_time:.3f}s)')
+        logger.info(f'task({task.task_id}) photo swap elapsed({timer.total_time:.3f}s)')
         return output_path, Error.OK
         
     def swap_video(self, task):
@@ -219,7 +219,7 @@ class FaceSwapper:
                 max_frame_count = count
                 trim_duration = task.trim_duration
             
-        logger.info(f"task({task.task_id}), res({width}x{height}@{fps:.2f}), target_fps({target_fps}), total({total}) max_frame_count({max_frame_count}), trim_duration({trim_duration}), frame_interval({frame_interval:.4f})")
+        logger.info(f"swap_video >> task({task.task_id}), res({width}x{height}@{fps:.2f}), target_fps({target_fps}), total({total}) max_frame_count({max_frame_count}), trim_duration({trim_duration}), frame_interval({frame_interval:.4f})")
         
         frame_index = 0
         new_frame_id = 0  # 目标视频的帧编号
@@ -244,7 +244,7 @@ class FaceSwapper:
        
         err = restore_audio(target_path, output_path, trim_duration)
         timer.toc()
-        logger.info(f'task({task.task_id}) video swap frames({new_frame_id}) cost({timer.total_time:.3f}s)')
+        logger.info(f'task({task.task_id}) video swap frames({new_frame_id}) elapsed({timer.total_time:.3f}s)')
         return output_path, err 
         
     def swap_face(self, source, source_face, target, target_faces):
